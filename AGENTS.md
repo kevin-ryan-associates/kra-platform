@@ -268,7 +268,10 @@ Access is via the `linear` MCP server, configured in the committed `.mcp.json` (
 1. Before starting any feature or spec-driven work, check the Platform Development project for a matching issue (via the `linear` MCP server — e.g. `linear_list_projects` / `linear_get_project`, then list the project's issues). The issue is the source of truth for scope and acceptance criteria.
 2. If a task has a corresponding Linear issue, reference the issue identifier in commit messages and branch names (e.g. `kra-42`).
 3. If you discover new work worth tracking (bugs, feature ideas, spec gaps), file it as an issue in the Platform Development project rather than only noting it in conversation.
-4. When a change driven by a Linear issue is complete, comment on or update the issue status in Linear so the project board reflects reality.
+4. When work on an issue starts, move it to **In Progress** and comment on the issue with the implementation plan (summary, approach, verification steps) before making any code changes.
+5. While working, comment on the issue as deviations from the posted plan or important findings (root causes, discovered drift, constraints, follow-up work) come up — as they occur, not batched at the end.
+6. When the change is complete and committed to GitHub, move the issue to **In Review** and comment with the commit SHA / PR link and verification evidence.
+7. Move an issue to **Done** only when a human operator explicitly instructs it — never autonomously, even when CI, deploys, and verification all pass.
 
 ## Agent Skills
 
@@ -280,7 +283,7 @@ The `.pi/skills/` path is a Pi convention, but the `SKILL.md` files are plain Ma
 - `terraform-plan-safe` — run `terraform fmt`/`validate`/`plan` against `infra/` with `-input=false` and the `.env.agents` → `TF_VAR_*` source-order flow.
 - `flux-onboard-site` — the executable form of the "Adding a new site" steps above, with `kubectl --dry-run`/`yamllint`/`flux build` validation.
 - `librechat-hq-theme-patch` — change hq.kevinryan.io theming/branding or upgrade the digest-pinned LibreChat image, with the mandatory throwaway-pod guard test before any image bump.
-- `linear-platform-development` — the executable form of "Project Management (Linear)" above: find/file/update issues in the Platform Development project via the `linear` MCP server.
+- `linear-platform-development` — the executable form of "Project Management (Linear)" above: find/file/update issues in the Platform Development project via the `linear` MCP server, including the mandatory ticket lifecycle (In Progress + plan comment on start, deviation/learnings comments as they occur, In Review on commit, Done only on human instruction).
 
 When the steps in "Adding a new site" or "Local credentials" above change, update the corresponding skill in the same commit so they do not drift. The same applies to `librechat-hq-theme-patch` whenever the overlay architecture or the image-bump procedure changes.
 

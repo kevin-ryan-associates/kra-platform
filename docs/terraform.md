@@ -17,8 +17,8 @@ graph TD
     subgraph azure["Azure"]
         rg["Resource Group<br/>rg-kevinryan-io"]
         vnet["VNet 10.0.0.0/16"]
-        node1["node1 — K3s Server<br/>Standard_B2s"]
-        node2["node2 — K3s Agent<br/>Standard_B2s"]
+        node1["node1 — K3s Server<br/>Standard_B2ms"]
+        node2["node2 — K3s Agent<br/>Standard_B2ms"]
         acr["Container Registry"]
         kv["Key Vault"]
         pg["PostgreSQL<br/>Flexible Server"]
@@ -26,7 +26,7 @@ graph TD
     end
 
     subgraph ext["External"]
-        cf["Cloudflare DNS<br/>5 zones"]
+        cf["Cloudflare DNS<br/>4 zones"]
         gh["GitHub OIDC<br/>Federated Identity"]
     end
 
@@ -140,7 +140,7 @@ Creates Ubuntu Linux VMs with system-assigned managed identities. The module is 
 | Setting | Value |
 |---------|-------|
 | OS | Ubuntu 24.04 LTS (`Canonical/ubuntu-24_04-lts/server`) |
-| Size | `Standard_B2s` (2 vCPUs, 4 GB RAM) |
+| Size | `Standard_B2ms` (2 vCPUs, 8 GB RAM) |
 | Disk | 30 GB Standard LRS |
 | Zone | 1 |
 | Identity | System-assigned managed identity |
@@ -363,7 +363,7 @@ graph TD
     kv["keyvault"]
     pg["postgresql"]
     reg["registry<br/>(ACR)"]
-    cf["cloudflare<br/>(×5 zones)"]
+    cf["cloudflare<br/>(×4 zones)"]
     oidc["github-oidc"]
 
     network --> node1 & node2

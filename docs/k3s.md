@@ -16,7 +16,7 @@ Managed Kubernetes services (AKS, EKS, GKE) are designed for large-scale workloa
 K3s is a CNCF-certified Kubernetes distribution that passes the full Kubernetes conformance test suite. It supports the same APIs, the same manifests, and the same ecosystem of controllers and operators as any other Kubernetes distribution. The difference is in how it's packaged:
 
 - **Single binary.** The entire K3s distribution — API server, scheduler, controller manager, kubelet, kube-proxy, and an embedded SQLite or etcd — ships as a single ~70MB binary.
-- **Minimal resource footprint.** A K3s server node runs comfortably on 2 vCPUs and 4 GB of RAM. This platform runs its entire cluster on two `Standard_B2s` VMs — the same hardware that would serve as a single node in a managed cluster.
+- **Minimal resource footprint.** A K3s server node runs comfortably on 2 vCPUs and 4 GB of RAM. This platform runs its entire cluster on two `Standard_B2ms` VMs (2 vCPUs, 8 GB RAM each) — hardware that would serve as a single node in a managed cluster.
 - **Batteries included.** K3s ships with Traefik as its default ingress controller, CoreDNS, and a local-path storage provisioner. These components work out of the box with no additional Helm charts or configuration.
 - **No vendor lock-in.** Because K3s is fully conformance-tested, every manifest in this repository would work on AKS, EKS, or any other Kubernetes distribution without modification. The platform could migrate to a managed service if scale demanded it.
 
@@ -37,15 +37,15 @@ K3s provides the full Kubernetes API, which means this platform uses the same to
 
 ### What You Save
 
-Running K3s on two `Standard_B2s` VMs instead of an equivalent managed Kubernetes cluster significantly reduces monthly costs:
+Running K3s on two `Standard_B2ms` VMs instead of an equivalent managed Kubernetes cluster significantly reduces monthly costs:
 
 | Component | Managed K8s (estimated) | K3s on VMs |
 |-----------|------------------------|------------|
 | Control plane | Included (free tier) or ~$70/mo | Embedded in VM |
-| Minimum nodes | 2–3 nodes (~$100–150/mo) | 2 × Standard_B2s (~$60/mo) |
+| Minimum nodes | 2–3 nodes (~$100–150/mo) | 2 × Standard_B2ms (~$122/mo) |
 | Load balancer | ~$20/mo | Cloudflare (free plan) |
 | NAT gateway | ~$30/mo | Not needed |
-| **Total** | **~$150–270/mo** | **~$60/mo** |
+| **Total** | **~$150–270/mo** | **~$122/mo** |
 
 The cost savings come from three places: no separate control plane charge, smaller VMs (burstable B-series instead of general-purpose D-series), and Cloudflare replacing the need for a cloud load balancer.
 

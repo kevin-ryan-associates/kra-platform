@@ -1,7 +1,7 @@
 ---
 name: "linear-platform-development"
 description: "Interact with the Platform Development Linear project for kra-platform — find spec/feature issues, file new work, and close the loop when done. Use for any Linear lookup, issue creation, or issue status update in this repo."
-version: 1
+version: 2
 created: "2026-09-21"
 updated: "2026-09-21"
 ---
@@ -22,6 +22,7 @@ Any time work in this repo touches Linear: checking the Platform Development pro
 ## Pitfalls
 
 - The linear MCP server is lazy — first call after connect can take several seconds; don't assume failure.
+- Read and write tools have different key shapes on this server: `linear_get_project` takes `query` (name, ID, identifier, or slug), NOT `id`; `linear_save_project` updates via `id`. `linear_get_issue`/`linear_save_issue` do take `id`.
 - Issue identifier (KRA-42) and issue UUID are different fields — `linear_save_issue`/`linear_get_issue` accept either, but branch/commit references use the identifier.
 - On create, `team` is required or the call fails; attaching to the project requires `project` set explicitly.
 - Use `assignee`, not `assigneeId` — `assigneeId` is silently wrong on this server's create/update shape.

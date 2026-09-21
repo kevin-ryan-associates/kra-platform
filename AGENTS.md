@@ -253,6 +253,23 @@ To onboard a new site into Flux CD:
 > TypeScript, Next.js, Astro, Tailwind, ESLint, and related conventions do **not** apply to them.
 > The root `build` and `lint` scripts use `--if-present` to skip these packages automatically.
 
+## Project Management (Linear)
+
+Features and specifications for this workspace are tracked in the **Platform Development** project in Linear:
+
+- Workspace: `kevin-ryan-platform` (team `KRA` — Kevin Ryan & Associates)
+- Project: Platform Development (`https://linear.app/kevin-ryan-platform/project/platform-development-6bebeedb8a2d`)
+- ID: `fe85bfeb-01f9-4bed-ba44-ccba4ae9fd03`
+
+Access is via the `linear` MCP server, configured in the committed `.mcp.json` (remote Streamable HTTP at `https://mcp.linear.app/mcp`, OAuth authentication — tokens live in the OS keychain, never in this repo). No secrets are committed.
+
+**Instructions for all agents working in this repo:**
+
+1. Before starting any feature or spec-driven work, check the Platform Development project for a matching issue (via the `linear` MCP server — e.g. `linear_list_projects` / `linear_get_project`, then list the project's issues). The issue is the source of truth for scope and acceptance criteria.
+2. If a task has a corresponding Linear issue, reference the issue identifier in commit messages and branch names (e.g. `kra-42`).
+3. If you discover new work worth tracking (bugs, feature ideas, spec gaps), file it as an issue in the Platform Development project rather than only noting it in conversation.
+4. When a change driven by a Linear issue is complete, comment on or update the issue status in Linear so the project board reflects reality.
+
 ## Agent Skills
 
 Project-scope agent skills live in `.pi/skills/` and are version-controlled alongside the code. They are **procedural companions to this file** — AGENTS.md remains the authoritative source; where a skill and this document disagree, AGENTS.md wins.
@@ -263,6 +280,7 @@ The `.pi/skills/` path is a Pi convention, but the `SKILL.md` files are plain Ma
 - `terraform-plan-safe` — run `terraform fmt`/`validate`/`plan` against `infra/` with `-input=false` and the `.env.agents` → `TF_VAR_*` source-order flow.
 - `flux-onboard-site` — the executable form of the "Adding a new site" steps above, with `kubectl --dry-run`/`yamllint`/`flux build` validation.
 - `librechat-hq-theme-patch` — change hq.kevinryan.io theming/branding or upgrade the digest-pinned LibreChat image, with the mandatory throwaway-pod guard test before any image bump.
+- `linear-platform-development` — the executable form of "Project Management (Linear)" above: find/file/update issues in the Platform Development project via the `linear` MCP server.
 
 When the steps in "Adding a new site" or "Local credentials" above change, update the corresponding skill in the same commit so they do not drift. The same applies to `librechat-hq-theme-patch` whenever the overlay architecture or the image-bump procedure changes.
 

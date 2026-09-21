@@ -90,7 +90,7 @@ export default defineConfig({
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/DevOpsKev/kevin-ryan-platform',
+          href: 'https://github.com/kevin-ryan-associates/kra-platform',
         },
       ],
       customCss: ['./src/styles/custom.css'],

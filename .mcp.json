@@ -4,6 +4,10 @@
       "url": "https://mcp.linear.app/mcp",
       "auth": "oauth"
     },
+    "plane": {
+      "url": "https://mcp.plane.so/http/mcp",
+      "auth": "oauth"
+    },
     "tessl": {
       "type": "stdio",
       "command": "tessl",

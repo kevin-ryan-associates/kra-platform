@@ -253,25 +253,27 @@ To onboard a new site into Flux CD:
 > TypeScript, Next.js, Astro, Tailwind, ESLint, and related conventions do **not** apply to them.
 > The root `build` and `lint` scripts use `--if-present` to skip these packages automatically.
 
-## Project Management (Linear)
+## Project Management (Plane)
 
-Features and specifications for this workspace are tracked in the **Platform Development** project in Linear:
+Features and specifications for this workspace are tracked in the **kra-platform-development** project in Plane:
 
-- Workspace: `kevin-ryan-platform` (team `KRA` — Kevin Ryan & Associates)
-- Project: Platform Development (`https://linear.app/kevin-ryan-platform/project/platform-development-6bebeedb8a2d`)
-- ID: `fe85bfeb-01f9-4bed-ba44-ccba4ae9fd03`
+- Workspace: `kevin-ryan-associates` (`https://app.plane.so/kevin-ryan-associates`)
+- Project: kra-platform-development — work item identifiers `KRA-NN`
+- Project ID: `98a0fada-1048-499b-a869-64c422fd26bb`
 
-Access is via the `linear` MCP server, configured in the committed `.mcp.json` (remote Streamable HTTP at `https://mcp.linear.app/mcp`, OAuth authentication — tokens live in the OS keychain, never in this repo). No secrets are committed.
+Access is via the `plane` MCP server, configured in the committed `.mcp.json` (remote Streamable HTTP at `https://mcp.plane.so/http/mcp`, OAuth authentication — tokens live in the OS keychain, never in this repo). No secrets are committed.
+
+> **History:** this workspace migrated from Linear to Plane on 2026-09-23. Linear (`https://linear.app/kevin-ryan-platform`) remains the read-only historical record for pre-migration issues. Plane numbering restarts at `KRA-1`, so identical identifiers exist in both systems — disambiguate by date (references before 2026-09-23 are Linear; later ones are Plane).
 
 **Instructions for all agents working in this repo:**
 
-1. Before starting any feature or spec-driven work, check the Platform Development project for a matching issue (via the `linear` MCP server — e.g. `linear_list_projects` / `linear_get_project`, then list the project's issues). The issue is the source of truth for scope and acceptance criteria.
-2. If a task has a corresponding Linear issue, reference the issue identifier in commit messages and branch names (e.g. `kra-42`).
-3. If you discover new work worth tracking (bugs, feature ideas, spec gaps), file it as an issue in the Platform Development project rather than only noting it in conversation.
-4. When work on an issue starts, move it to **In Progress** and comment on the issue with the implementation plan (summary, approach, verification steps) before making any code changes.
-5. While working, comment on the issue as deviations from the posted plan or important findings (root causes, discovered drift, constraints, follow-up work) come up — as they occur, not batched at the end.
-6. When the change is complete and committed to GitHub, move the issue to **In Review** and comment with the commit SHA / PR link and verification evidence.
-7. Move an issue to **Done** only when a human operator explicitly instructs it — never autonomously, even when CI, deploys, and verification all pass.
+1. Before starting any feature or spec-driven work, check the kra-platform-development project for a matching work item (via the `plane` MCP server — `plane_project` `list`, then `plane_workitem` `list` filtered by project). The work item is the source of truth for scope and acceptance criteria.
+2. If a task has a corresponding work item, reference its identifier in commit messages and branch names (e.g. `kra-42`).
+3. If you discover new work worth tracking (bugs, feature ideas, spec gaps), file it as a work item in the kra-platform-development project rather than only noting it in conversation.
+4. When work on an item starts, move it to **In Progress** and comment on it with the implementation plan (summary, approach, verification steps) before making any code changes.
+5. While working, comment on the item as deviations from the posted plan or important findings (root causes, discovered drift, constraints, follow-up work) come up — as they occur, not batched at the end.
+6. When the change is complete and committed to GitHub, move the item to **In Review** and comment with the commit SHA / PR link and verification evidence.
+7. Move an item to **Done** only when a human operator explicitly instructs it — never autonomously, even when CI, deploys, and verification all pass.
 
 ## Agent Skills
 
@@ -283,7 +285,7 @@ The `.pi/skills/` path is a Pi convention, but the `SKILL.md` files are plain Ma
 - `terraform-plan-safe` — run `terraform fmt`/`validate`/`plan` against `infra/` with `-input=false` and the `.env.agents` → `TF_VAR_*` source-order flow.
 - `flux-onboard-site` — the executable form of the "Adding a new site" steps above, with `kubectl --dry-run`/`yamllint`/`flux build` validation.
 - `librechat-hq-theme-patch` — change hq.kevinryan.io theming/branding or upgrade the digest-pinned LibreChat image, with the mandatory throwaway-pod guard test before any image bump.
-- `linear-platform-development` — the executable form of "Project Management (Linear)" above: find/file/update issues in the Platform Development project via the `linear` MCP server, including the mandatory ticket lifecycle (In Progress + plan comment on start, deviation/learnings comments as they occur, In Review on commit, Done only on human instruction).
+- `plane-platform-development` — the executable form of "Project Management (Plane)" above: find/file/update work items in the kra-platform-development project via the `plane` MCP server, including the mandatory ticket lifecycle (In Progress + plan comment on start, deviation/learnings comments as they occur, In Review on commit, Done only on human instruction).
 
 When the steps in "Adding a new site" or "Local credentials" above change, update the corresponding skill in the same commit so they do not drift. The same applies to `librechat-hq-theme-patch` whenever the overlay architecture or the image-bump procedure changes.
 

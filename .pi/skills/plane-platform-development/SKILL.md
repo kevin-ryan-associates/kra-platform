@@ -1,7 +1,7 @@
 ---
 name: "plane-platform-development"
 description: "Interact with the kra-platform-development Plane project for kra-platform — find spec/feature work items, file new work, and close the loop when done. Use for any Plane lookup, work item creation, or work item status update in this repo."
-version: 1
+version: 1.1
 created: "2026-09-23"
 updated: "2026-09-23"
 ---
@@ -49,7 +49,7 @@ These rules are standing instructions from the repository owner and apply to **a
 ## Pitfalls
 
 - One tool per resource, selected by an `action` parameter — there are no per-operation tool names (no `plane_create_issue`; it is `plane_workitem` with `action: "create"`). Key tools: `plane_workitem`, `plane_workitem_comment`, `plane_state`, `plane_project`, `plane_member`, `plane_label`, `plane_cycle`, `plane_module`, `plane_work_log`, `plane_get_pql_reference`.
-- UUID-backed parameters (`state`, `assignees`, `labels`, `parent`, `type_id`) take UUIDs, never names — list the resource first. The state UUIDs are in Constants above; re-verify with `plane_state list` if a state was ever recreated.
+- UUID-backed parameters (`state`, `assignees`, `labels`, `parent`, `type_id`) take UUIDs, never names — resolve them first. The state UUIDs are in Constants above; re-verify with `plane_state list` if a state was ever recreated. For `assignees`, the member UUID comes from `plane_member` `action: "me"` (see the `plane_member` pitfall below) — `created_by` on any existing work item is also Kevin's UUID.
 - `plane_project` `update` can return `HTTP 400: Bad Request: Please provide valid detail` **even when the write succeeded** (observed changing the project identifier — a follow-up `retrieve` showed it landed). Verify project/state writes with a follow-up read; do not trust the error echo.
 - `plane_state` `create` ignored the requested `sequence` (In Review landed at 70000 instead of 40000; fixed via `state update`) — verify ordering after creating a state.
 - `comment_html` is HTML — wrap prose in `<p>…</p>`. Mentions are `@[<user uuid>]` inline (a bare `@name` is plain text and notifies nobody).
@@ -60,6 +60,11 @@ These rules are standing instructions from the repository owner and apply to **a
 - Identifier mismatch with Linear history: all 11 Linear issues were migrated on 2026-09-23 (open KRA-71…KRA-81 → Plane KRA-2…KRA-10; the two pre-migration Done items KRA-74/KRA-76 → Plane KRA-11/KRA-12), but Plane renumbered them consecutively — the numbers do not correspond. Every migrated item carries a Linear backlink (`workitem_link`) and a provenance line in its description; use those, not the number, to correlate. Pre-2026-09-23 `kra-NN` references (git history, old PRs) mean the Linear issue.
 - The plane server is read-write — check-first applies to reads. For writes: the Ticket Lifecycle above is pre-authorized standing instruction from the repository owner; anything beyond it (reassigning, re-prioritizing, deleting non-scratch items, workflow/state changes) needs the user's direction first.
 - Never move an item to `Done` autonomously — the transition requires an explicit human operator instruction, even when CI, deploys, and verification all pass.
+- `plane_member` has **no** `list` action — its actions are `me | list_workspace | list_project | list_roles | retrieve_role`. Use `action: "me"` to get your own member UUID (`id` field) when assigning yourself to items (verified 2026-09-23 assigning KRA-2…KRA-8 in one mcpScript pass).
+- Through `mcpScript`, `plane_workitem list` output exceeds the response size limit: the result is replaced by an `omitted: true` summary and the full JSON is written to a temp file (`fullResultPath`). Do **not** treat that as an empty project. Options: run `list` via the direct `mcp` tool (full result comes back inline), narrow the list with `pql`, or parse the `fullResultPath` temp file. Per-item calls (`retrieve_by_identifier`) are small and fit fine — when only IDs are needed, `retrieve_by_identifier` each item instead of `list`.
+- In `mcpScript`, `tools.call` resolves to `{ok, data: {structuredContent: …}}` (sometimes with a further `.result` inside) — unwrap `.data.structuredContent` (and `.result` if present) before reading fields. A wrong unwrap makes *successful* writes look like failures (observed 2026-09-23: assignee updates landed but a broken unwrap reported `NOT ASSIGNED`). Always verify writes with a follow-up read of the actual field — for assignees, `assignees` contains the UUID and `min_assignee_first_name` shows the resolved name.
+- State-update responses can echo stale `state_group` (moving KRA-9 to Done returned `state_group: "started"` while `state` was the Done UUID and `completed_at` was set). Trust `state` + `completed_at`, or confirm with `retrieve_by_identifier` (`state_group` showed `completed` on the follow-up read).
+- `workitem update` silently ignores `sort_order`: the call returns ok, but `updated_at` stays unchanged and a follow-up read shows the old value (verified 2026-09-23 setting kanban order on KRA-2…KRA-9). Plane's public API does not persist manual kanban ordering via PATCH, and the server exposes no reorder tool. Within-column board order can only be set by dragging cards in the Plane UI, or indirectly by sorting the board by `priority` (which the API does control). Always verify `sort_order` writes with a follow-up `retrieve` — do not trust the ok response.
 - Don't batch deviations/learnings into one end-of-task comment — post them on the item as they are discovered.
 - Comments go through `workitem_comment` (`create`/`list` with `project_id` + `workitem_id`), not `workitem`. `workitem_comment list` reads them back when resuming an item.
 

@@ -1,7 +1,7 @@
 {
   "mcpServers": {
-    "linear": {
-      "url": "https://mcp.linear.app/mcp",
+    "plane": {
+      "url": "https://mcp.plane.so/http/mcp",
       "auth": "oauth"
     },
     "tessl": {

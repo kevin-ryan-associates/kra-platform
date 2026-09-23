@@ -36,13 +36,13 @@ Cloudflare (DNS + CDN + TLS) — 4 domain zones
      │  HTTPS (Full SSL mode)
      ▼
 Azure Public IP (North Europe)
-├── K3s Server (node1 — Standard_B2s)
+├── K3s Server (node1 — Standard_B2ms)
 │   ├── Traefik Ingress (host-based routing)
 │   ├── Flux CD (source, kustomize, helm controllers)
 │   ├── External Secrets Operator
 │   └── Site Deployments ×6 (nginx containers)
 │
-├── K3s Agent (node2 — Standard_B2s)
+├── K3s Agent (node2 — Standard_B2ms)
 │   ├── Grafana (monitoring.kevinryan.io)
 │   ├── Loki (log aggregation)
 │   ├── Promtail (log collection)
@@ -166,7 +166,7 @@ All infrastructure is defined in Terraform and deployed to Azure:
 
 | Component | Details |
 |-----------|---------|
-| **Compute** | 2-node K3s cluster on Ubuntu 24.04 LTS (Standard_B2s) |
+| **Compute** | 2-node K3s cluster on Ubuntu 24.04 LTS (Standard_B2ms) |
 | **Container Registry** | Azure Container Registry (ACR) + GHCR |
 | **Secrets** | Azure Key Vault, synced via External Secrets Operator |
 | **Database** | Azure PostgreSQL Flexible Server (Umami + Grafana) |

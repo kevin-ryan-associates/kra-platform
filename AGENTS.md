@@ -263,7 +263,8 @@ Features and specifications for this workspace are tracked in the **kra-platform
 
 Access is via the `plane` MCP server, configured in the committed `.mcp.json` (remote Streamable HTTP at `https://mcp.plane.so/http/mcp`, OAuth authentication — tokens live in the OS keychain, never in this repo). No secrets are committed.
 
-> **History:** this workspace migrated from Linear to Plane on 2026-09-23. All open Linear issues (KRA-71…KRA-81) were migrated to Plane work items — each carries a backlink to its Linear original and a provenance line in its description, and the Plane/Linear numbers do **not** correspond (e.g. Linear KRA-81 → Plane KRA-10). Linear (`https://linear.app/kevin-ryan-platform`) remains the read-only historical record, including the two issues completed pre-migration (KRA-74, KRA-76). Disambiguate any `kra-NN` reference by date: before 2026-09-23 means the Linear issue, after means the Plane work item.
+> **History:** migrated from Linear to Plane on 2026-09-23. All 11 Linear issues were migrated to Plane work items — the 9 open ones plus the two completed pre-migration (Linear KRA-74/KRA-76 → Plane KRA-11/KRA-12, state Done). Each carries a backlink to its Linear original, and the Plane/Linear numbers do **not** correspond (e.g. Linear KRA-81 → Plane KRA-10).
+> Linear (`https://linear.app/kevin-ryan-platform`) remains the read-only historical record. Disambiguate any `kra-NN` reference by date: before 2026-09-23 means the Linear issue, after means the Plane work item.
 
 **Instructions for all agents working in this repo:**
 

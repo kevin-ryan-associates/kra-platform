@@ -63,6 +63,23 @@ and flux hang on connect** — a primary cause of agent freezes that force
   remove it to "debug" interactively from the agent.
 - If `nc` reports DOWN, the SSH process may have died — `ps -ef | grep
   'ssh -fN.*6443'` and re-run step 2.
+- **Node wedge under RAM pressure** (observed on the B2s 4GiB control plane,
+  before the B2ms resize): Azure shows `PowerState=VM running` and private-IP
+  ping works, but SSH fails with `banner exchange timeout` and the API on
+  :6443 fails with `SSL connection timeout`. That is a userspace wedge, not a
+  crash. Recovery: `az vm restart` (no tunnel needed) → SSH returns in ~3 min
+  → scale the offending deployment to 0 → `flux suspend kustomization <name>
+  -n flux-system` → fix the root cause (e.g. VM resize) → `flux resume`.
+- **SSH port-22 timeouts from some networks** (NSG IP restriction) can hit
+  while all sites serve fine. If the tunnel cannot be established, do NOT
+  force a reconcile — every `k8s/flux-system/*-sync.yaml` uses
+  `interval: 10m0s`, so Flux self-reconciles within ~10 minutes; verify
+  via the live site instead.
+- `flux build kustomization` connects to the live cluster by default; the
+  offline form needs BOTH flags:
+  `flux build kustomization --path <dir> --kustomization-file <cr.yaml>
+  --dry-run --in-memory-build`. Pure client-side alternative:
+  `kubectl kustomize <dir>` (no standalone `kustomize` binary installed).
 
 ## Verification
 

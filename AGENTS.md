@@ -6,7 +6,7 @@ This is a monorepo hosting multiple sites for Kevin Ryan (AI-Native Engineering 
 
 ### Sites
 
-- **kevinryan.io** — portfolio site. Next.js 16 (App Router, static export), React 19, Tailwind CSS 4. Marketing sections plus the AI Capabilities Assessment.
+- **kevinryan.io** — portfolio site. Next.js 16 (App Router, static export), React 19, Tailwind CSS 4. Marketing sections plus the AI Capabilities Assessment. Tailwind 4 runs via `@tailwindcss/postcss` with `@theme` tokens in `app/globals.css` (zero inline styles); the Tokyo Night Moon palette in that file is the reference palette for theming other surfaces — authority: `design-spec/theme-spec.md` (sourced verbatim from the dotfiles `theme.tokyo_night_moon`).
 - **brand.kevinryan.io** — static HTML brand guidelines site (no build step, no Node.js tooling).
 - **docs.kevinryan.io** — platform documentation site. Astro Starlight, serves the ADRs and infrastructure guides.
 - **hq.kevinryan.io** — LibreChat (upstream pre-built image + customization overlay). Deploys the upstream multi-container image (digest-pinned in `k8s/hq-kevinryan-io/deployment.yaml`, never `:latest`) plus an internal MongoDB, behind the existing `hq.kevinryan.io` IngressRoute. No build step, no Next.js source, no Dockerfile. Theming/branding (Tokyo Night Moon CSS, HQ title, favicons) is applied as an **overlay layer** — a `patch-index` initContainer that seds `index.html` (with fail-loud post-patch guards) and a `librechat-custom` ConfigMap mounted over `/app/client/dist/`.
@@ -14,7 +14,7 @@ This is a monorepo hosting multiple sites for Kevin Ryan (AI-Native Engineering 
   Native email/password auth (Auth0 was dropped); Claude endpoint enabled via the bundled `ANTHROPIC_API_KEY`.
 - **aiimmigrants.com** — static HTML holding page for the *AI Immigrants* book (no build step, no Node.js tooling).
 - **distributedequity.org** — static HTML site for the Distributed Equity License (no build step, no Node.js tooling).
-- **ai-native-engineer.io** — the *AI-Native Engineer* book. Astro 5 (plain, no Starlight) generating per-chapter pages from markdown content collections, served as a static export. Custom layout consumes the locked `design-assets/theme.css` (Nord palette, Swiss grid) so the book design is matched exactly.
+- **ai-native-engineer.io** — the *AI-Native Engineer* book. Astro 5 (plain, no Starlight) generating per-chapter pages from markdown content collections, served as a static export. The design system is **locked** (`design-assets/THEME-SPEC.md` v1.0.0): `tokens.jsonc` (Nord palette, Swiss grid, radius 0, Archivo/IBM Plex fonts) → `theme.css`; generators read `tokens.jsonc`, not `theme.css`; `BookLayout` imports `theme.css` verbatim, and `src/styles/layout.css` holds page chrome on semantic tokens only — never fork token values there.
 
 ### Stack
 
@@ -241,6 +241,8 @@ kevin-ryan-platform/
 └── pnpm-workspace.yaml
 ```
 
+> **Note:** `sites/docs-kevinryan-io/src/content/docs` is a **symlink** to the repo-root `docs/` directory — ADRs and guides physically live at `docs/adr/adr-*.md` and `docs/*.md`. Git operations must target the real `docs/` path; the symlink path fails with `fatal: pathspec … is beyond a symbolic link` (exit 128).
+
 ### Adding a new site
 
 To onboard a new site into Flux CD:
@@ -252,6 +254,15 @@ To onboard a new site into Flux CD:
 > **Note:** `brand-kevinryan-io`, `aiimmigrants-com`, and `distributedequity-org` are pure static HTML sites with no build step.
 > TypeScript, Next.js, Astro, Tailwind, ESLint, and related conventions do **not** apply to them.
 > The root `build` and `lint` scripts use `--if-present` to skip these packages automatically.
+
+## CI/CD Notes
+
+- The `actions/checkout` action is pinned at v5.1.0 (SHA `fbc6f399…`) in the deploy/terraform/validate workflows — do **not** bump it to v6+ (a credential-persistence change would risk the deploy workflow's auto-commit-to-main).
+- `deploy.yml` auto-commits image-tag updates to `main` after deploys — a push right after may be non-fast-forward; rebase and push again.
+- `terraform.yml` passes no `TF_VAR_*` and cannot read the gitignored `terraform.tfvars` — CI **applies use the infra variable defaults**, so defaults are live values; stale defaults are apply hazards.
+- The terraform apply job is gated on the `production` environment; unapproved runs queue indefinitely — `gh run cancel` stale ones, and decode the tfplan artifact before approving (see the `terraform-plan-safe` skill for the version-locked `terraform show` flow).
+- PR merges use merge commits.
+- After a successful deploy, a stale page at the edge is **Cloudflare cache** (`cf-cache-status: HIT`), not a Flux failure — purge the zone (`purge_everything` via the Cloudflare API, `CLOUDFLARE_API_TOKEN` from `.env.agents`). There are 4 Cloudflare zones (brand/docs/hq are subdomains of the kevinryan.io zone, not separate zones); zone IDs live only in `infra/terraform.tfvars`. KRA-17 tracks automating the post-deploy purge.
 
 ## Project Management (Plane)
 
@@ -286,9 +297,12 @@ The `.pi/skills/` path is a Pi convention, but the `SKILL.md` files are plain Ma
 - `terraform-plan-safe` — run `terraform fmt`/`validate`/`plan` against `infra/` with `-input=false` and the `.env.agents` → `TF_VAR_*` source-order flow.
 - `flux-onboard-site` — the executable form of the "Adding a new site" steps above, with `kubectl --dry-run`/`yamllint`/`flux build` validation.
 - `librechat-hq-theme-patch` — change hq.kevinryan.io theming/branding or upgrade the digest-pinned LibreChat image, with the mandatory throwaway-pod guard test before any image bump.
-- `plane-platform-development` — the executable form of "Project Management (Plane)" above: find/file/update work items in the kra-platform-development project via the `plane` MCP server, including the mandatory ticket lifecycle (In Progress + plan comment on start, deviation/learnings comments as they occur, In Review on commit, Done only on human instruction).
+- `plane-platform-development` — the executable form of "Project Management (Plane)" above: find/file/update work items in the kra-platform-development project via the `plane` MCP server, including the mandatory ticket lifecycle (In Progress + plan comment on start, deviation/learnings comments as they occur, In Review on commit, Done only on human instruction) and the story-point-estimate-on-create rule.
+- `work-item-development` — the end-to-end workflow for developing a work item: intake (create with a story point estimate; filing ≠ authorization to implement), implement (docs-first), commit/PR, deploy (watch CI → Flux → Cloudflare purge — never stop after push), live verification (visual for UI changes), and close (In Review + evidence). Orchestrates the specialist skills above rather than duplicating them.
 
 When the steps in "Adding a new site" or "Local credentials" above change, update the corresponding skill in the same commit so they do not drift. The same applies to `librechat-hq-theme-patch` whenever the overlay architecture or the image-bump procedure changes.
+
+Edit skill files in `.pi/skills/` directly with the file tools — `skill_manage` cannot patch repo skills (it tracks only its own copies, and silently reintroduces stale content where patch does work).
 
 ## When Generating Code
 
@@ -300,6 +314,10 @@ When the steps in "Adding a new site" or "Local credentials" above change, updat
 
 ## Documentation Conventions
 
+- ADR files (`docs/adr/adr-*.md`) are immutable decision-time records — never edit stale facts inside an ADR; fix stale claims only in living docs (AGENTS.md, README.md, `docs/`). Amendments go through the ADR process (dated amendment note or superseding ADR).
+- There is no root-level `pnpm lint` script — lint per site: `pnpm --filter <site> lint`.
+- The openspec CLI is explicitly rejected for this repo — do not add it to toolchain docs, workflows, or agent tool lists.
+- After the SDD retirement (ADR-024, KRA-16), do not reintroduce SDD references in living docs — the only permitted mentions are ADR-024 itself and the kevinryan.io assessment components, which describe the DORA AI Capabilities Model methodology, not the retired internal process.
 - In Markdown code blocks, never put `#` comments on the same line as a command. Place comments on their own line above the command.
 - Rationale: yanking a line in AstroVim should grab only the command, not the trailing comment.
 
@@ -333,7 +351,8 @@ If a request conflicts with project constraints or specifications, flag the conf
 ## Pre-Commit Checklist
 
 > **Note:** Husky + lint-staged enforces most of these checks automatically at commit time
-> (ESLint, TypeScript type checking, markdownlint). The pre-push hook runs `pnpm build`.
+> (ESLint, TypeScript type checking, markdownlint). The pre-push hook runs the full site
+> build (`pnpm --filter './sites/*' --if-present build`) plus `tflint --recursive`.
 > This checklist remains as a manual reference for anything the hooks don't catch.
 
 Before suggesting code is complete:

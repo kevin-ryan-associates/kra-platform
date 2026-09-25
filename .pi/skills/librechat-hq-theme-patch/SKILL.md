@@ -117,6 +117,9 @@ and fails on drift.
   rollout, **purge the Cloudflare cache** — the edge has the stale
   compressed object cached (s-maxage 86400) for both the query-less and
   `?v=` URLs.
+- **Health probes are `httpGet /health`, not `tcpSocket`** — a tcpSocket
+  probe passed at the socket level before the app could serve HTTP, causing
+  restart loops. Probe definitions live in `k8s/hq-kevinryan-io/deployment.yaml`.
 - Non-English locales still carry upstream strings — only the en locale is
   patched (compiled bundles, solo English user). Guard-test catches wording
   changes on image bumps.

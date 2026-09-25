@@ -1,5 +1,5 @@
 ---
-name: librechat-hq-theme-patch
+name: patch-librechat-theme
 description: Change hq.kevinryan.io LibreChat theming/branding (custom-theme.css, index.html patches, favicons) or upgrade the pinned LibreChat image digest safely. Use for any hq visual change, an image digest bump, or debugging a failed patch-index initContainer.
 ---
 
@@ -66,7 +66,7 @@ and fails on drift.
    `?v=<sha256-8>` cache-buster in `deployment.yaml`.
 3. Validate: `yamllint -s k8s/hq-kevinryan-io/` and
    `kubectl apply --dry-run=client --validate=false -f k8s/hq-kevinryan-io/`
-   (tunnel must be up — see the `k3s-ssh-tunnel-and-deploy` skill).
+   (tunnel must be up — see the `access-k3s-cluster` skill).
 4. Review the generated diff, commit (`[hq] …`) and push to `main`; Flux
    deploys. CI re-runs `--check` and fails if anything drifted.
 
@@ -149,7 +149,7 @@ and fails on drift.
   patched (compiled bundles, solo English user). Guard-test catches wording
   changes on image bumps.
 - `kubectl`/`flux` hang without the kr-node1 SSH tunnel (see
-  `k3s-ssh-tunnel-and-deploy`); always use `--request-timeout=30s`.
+  `access-k3s-cluster`); always use `--request-timeout=30s`.
 
 ## Verification
 

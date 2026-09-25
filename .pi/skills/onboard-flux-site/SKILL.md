@@ -1,5 +1,5 @@
 ---
-name: flux-onboard-site
+name: onboard-flux-site
 description: Onboard a new site into Flux CD GitOps in the kra-platform repo.
   Use when adding a new site under k8s/<site>/ — create the plain manifests,
   the flux-system sync Kustomization, and wire it into kustomization.yaml.
@@ -62,7 +62,7 @@ Flux CD is the GitOps entry point (`k8s/flux-system/`). Each site gets:
    ```
 
 5. Commit and push to `main` (Flux reconciles within ~10m; or force a
-   reconcile against the live cluster using the `k3s-ssh-tunnel-and-deploy`
+   reconcile against the live cluster using the `access-k3s-cluster`
    skill).
 
 ## Pitfalls
@@ -87,4 +87,4 @@ Flux CD is the GitOps entry point (`k8s/flux-system/`). Each site gets:
 - `k8s/flux-system/kustomization.yaml` lists `<site>-sync.yaml` in `resources`.
 - After push, `flux get kustomizations -n flux-system | grep <site>` shows the
   new CR reconciling (requires the SSH tunnel — see
-  `k3s-ssh-tunnel-and-deploy`).
+  `access-k3s-cluster`).

@@ -71,7 +71,7 @@ All branding — Tokyo Night Moon dark-only theme, "HQ - Kevin Ryan & Associates
 
 The overlay sources live in `sites/hq-kevinryan-io/` (`custom-theme.css`, `logo.svg`, favicons); `scripts/sync-hq-theme.sh` regenerates the ConfigMap from them, and `validate.yml` runs it in `--check` mode on every push to block drift between sources and the deployed ConfigMap.
 
-> Any change to this layer — theming, branding, or a LibreChat image digest bump — must follow the `librechat-hq-theme-patch` skill (`.pi/skills/`), including the mandatory throwaway-pod guard test before any image bump. Never edit the generated ConfigMap by hand.
+> Any change to this layer — theming, branding, or a LibreChat image digest bump — must follow the `patch-librechat-theme` skill (`.pi/skills/`), including the mandatory throwaway-pod guard test before any image bump. Never edit the generated ConfigMap by hand.
 
 ## Authentication and AI Endpoints
 
@@ -95,4 +95,4 @@ The trade-off is explicit in ADR-023: zero build maintenance in exchange for an 
 - [ADR-021: Auth0 for HQ Authentication](/adr/adr-021-auth0-authentication-hq/) (superseded)
 - `k8s/hq-kevinryan-io/` — deployment, statefulset, ingress, secrets
 - `scripts/sync-hq-theme.sh` — theme ConfigMap generator (+ `--check` drift gate)
-- `.pi/skills/librechat-hq-theme-patch/SKILL.md` — mandatory procedure for theming changes and image bumps
+- `.pi/skills/patch-librechat-theme/SKILL.md` — mandatory procedure for theming changes and image bumps

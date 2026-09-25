@@ -25,11 +25,11 @@ Procedural knowledge lives as version-controlled skills alongside the code. Each
 
 | Skill | Purpose |
 |-------|---------|
-| `k3s-ssh-tunnel-and-deploy` | Open the kr-node1 SSH tunnel and run kubectl/flux against the cluster without hanging |
-| `terraform-plan-safe` | Run terraform fmt/validate/plan with `-input=false` and the `.env.agents` → `TF_VAR_*` flow |
-| `flux-onboard-site` | Onboard a new site into Flux CD with full dry-run validation |
-| `librechat-hq-theme-patch` | Change hq.kevinryan.io theming or bump the LibreChat image digest safely (mandatory throwaway-pod guard test) |
-| `plane-platform-development` | Interact with the kra-platform-development Plane project — the ticket lifecycle below |
+| `access-k3s-cluster` | Open the kr-node1 SSH tunnel and run kubectl/flux against the cluster without hanging |
+| `plan-terraform-safely` | Run terraform fmt/validate/plan with `-input=false` and the `.env.agents` → `TF_VAR_*` flow |
+| `onboard-flux-site` | Onboard a new site into Flux CD with full dry-run validation |
+| `patch-librechat-theme` | Change hq.kevinryan.io theming or bump the LibreChat image digest safely (mandatory throwaway-pod guard test) |
+| `manage-plane-workitems` | Interact with the kra-platform-development Plane project — the ticket lifecycle below |
 
 Skills are **procedural companions** to AGENTS.md: where a skill and AGENTS.md disagree, AGENTS.md wins. When the steps in AGENTS.md change (e.g. the site-onboarding procedure, the secret flow, or the HQ overlay architecture), the corresponding skill must be updated in the same commit so they never drift.
 

@@ -10,7 +10,7 @@ This is a monorepo hosting multiple sites for Kevin Ryan (AI-Native Engineering 
 - **brand.kevinryan.io** — static HTML brand guidelines site (no build step, no Node.js tooling).
 - **docs.kevinryan.io** — platform documentation site. Astro Starlight, serves the ADRs and infrastructure guides.
 - **hq.kevinryan.io** — LibreChat (upstream pre-built image + customization overlay). Deploys the upstream multi-container image (digest-pinned in `k8s/hq-kevinryan-io/deployment.yaml`, never `:latest`) plus an internal MongoDB, behind the existing `hq.kevinryan.io` IngressRoute. No build step, no Next.js source, no Dockerfile. Theming/branding (Tokyo Night Moon CSS, HQ title, favicons) is applied as an **overlay layer** — a `patch-index` initContainer that seds `index.html` (with fail-loud post-patch guards) and a `librechat-custom` ConfigMap mounted over `/app/client/dist/`.
-  See the `librechat-hq-theme-patch` skill before touching any of it.
+  See the `patch-librechat-theme` skill before touching any of it.
   Native email/password auth (Auth0 was dropped); Claude endpoint enabled via the bundled `ANTHROPIC_API_KEY`.
 - **aiimmigrants.com** — static HTML holding page for the *AI Immigrants* book (no build step, no Node.js tooling).
 - **distributedequity.org** — static HTML site for the Distributed Equity License (no build step, no Node.js tooling).
@@ -42,7 +42,7 @@ Applicable to all TypeScript/React sites (kevinryan.io, hq.kevinryan-io, docs-ke
 - One component per file
 
 **Exception — hq.kevinryan.io:** This site deploys LibreChat (a pre-built, server-side Node app + MongoDB) from the upstream image — there is no build step, no Dockerfile, and no committed app source. It is deliberately excluded from the static-export and zero-runtime constraints, and the shared CI deploy workflow auto-skips it (it filters to sites that have both a `Dockerfile` and a `k8s/<site>/deployment.yaml`). Manifest changes deploy via Flux on push to `main`.
-It is **not vanilla**: all theming/branding is an overlay (sed-patched `index.html` + ConfigMap-mounted assets) layered on the unmodified upstream image. Any LibreChat image change must go through the `librechat-hq-theme-patch` skill's guard-test procedure — do not bump the image or edit the overlay without it.
+It is **not vanilla**: all theming/branding is an overlay (sed-patched `index.html` + ConfigMap-mounted assets) layered on the unmodified upstream image. Any LibreChat image change must go through the `patch-librechat-theme` skill's guard-test procedure — do not bump the image or edit the overlay without it.
 
 ## Build Commands
 
@@ -260,7 +260,7 @@ To onboard a new site into Flux CD:
 - The `actions/checkout` action is pinned at v5.1.0 (SHA `fbc6f399…`) in the deploy/terraform/validate workflows — do **not** bump it to v6+ (a credential-persistence change would risk the deploy workflow's auto-commit-to-main).
 - `deploy.yml` auto-commits image-tag updates to `main` after deploys — a push right after may be non-fast-forward; rebase and push again.
 - `terraform.yml` passes no `TF_VAR_*` and cannot read the gitignored `terraform.tfvars` — CI **applies use the infra variable defaults**, so defaults are live values; stale defaults are apply hazards.
-- The terraform apply job is gated on the `production` environment; unapproved runs queue indefinitely — `gh run cancel` stale ones, and decode the tfplan artifact before approving (see the `terraform-plan-safe` skill for the version-locked `terraform show` flow).
+- The terraform apply job is gated on the `production` environment; unapproved runs queue indefinitely — `gh run cancel` stale ones, and decode the tfplan artifact before approving (see the `plan-terraform-safely` skill for the version-locked `terraform show` flow).
 - PR merges use merge commits.
 - After a successful deploy, a stale page at the edge is **Cloudflare cache** (`cf-cache-status: HIT`), not a Flux failure — purge the zone (`purge_everything` via the Cloudflare API, `CLOUDFLARE_API_TOKEN` from `.env.agents`). There are 4 Cloudflare zones (brand/docs/hq are subdomains of the kevinryan.io zone, not separate zones); zone IDs live only in `infra/terraform.tfvars`. KRA-17 tracks automating the post-deploy purge.
 
@@ -293,14 +293,14 @@ Project-scope agent skills live in `.pi/skills/` and are version-controlled alon
 
 The `.pi/skills/` path is a Pi convention, but the `SKILL.md` files are plain Markdown and agent-agnostic — any agent or contributor can read them directly.
 
-- `k3s-ssh-tunnel-and-deploy` — open the kr-node1 SSH tunnel and run `kubectl`/`flux` without hanging (non-interactive flags, explicit request timeouts).
-- `terraform-plan-safe` — run `terraform fmt`/`validate`/`plan` against `infra/` with `-input=false` and the `.env.agents` → `TF_VAR_*` source-order flow.
-- `flux-onboard-site` — the executable form of the "Adding a new site" steps above, with `kubectl --dry-run`/`yamllint`/`flux build` validation.
-- `librechat-hq-theme-patch` — change hq.kevinryan.io theming/branding or upgrade the digest-pinned LibreChat image, with the mandatory throwaway-pod guard test before any image bump.
-- `plane-platform-development` — the executable form of "Project Management (Plane)" above: find/file/update work items in the kra-platform-development project via the `plane` MCP server, including the mandatory ticket lifecycle (In Progress + plan comment on start, deviation/learnings comments as they occur, In Review on commit, Done only on human instruction) and the story-point-estimate-on-create rule.
-- `work-item-development` — the end-to-end workflow for developing a work item: intake (create with a story point estimate; filing ≠ authorization to implement), implement (docs-first), commit/PR, deploy (watch CI → Flux → Cloudflare purge — never stop after push), live verification (visual for UI changes), and close (In Review + evidence). Orchestrates the specialist skills above rather than duplicating them.
+- `access-k3s-cluster` — open the kr-node1 SSH tunnel and run `kubectl`/`flux` without hanging (non-interactive flags, explicit request timeouts).
+- `plan-terraform-safely` — run `terraform fmt`/`validate`/`plan` against `infra/` with `-input=false` and the `.env.agents` → `TF_VAR_*` source-order flow.
+- `onboard-flux-site` — the executable form of the "Adding a new site" steps above, with `kubectl --dry-run`/`yamllint`/`flux build` validation.
+- `patch-librechat-theme` — change hq.kevinryan.io theming/branding or upgrade the digest-pinned LibreChat image, with the mandatory throwaway-pod guard test before any image bump.
+- `manage-plane-workitems` — the executable form of "Project Management (Plane)" above: find/file/update work items in the kra-platform-development project via the `plane` MCP server, including the mandatory ticket lifecycle (In Progress + plan comment on start, deviation/learnings comments as they occur, In Review on commit, Done only on human instruction) and the story-point-estimate-on-create rule.
+- `develop-work-item` — the end-to-end workflow for developing a work item: intake (create with a story point estimate; filing ≠ authorization to implement), implement (docs-first), commit/PR, deploy (watch CI → Flux → Cloudflare purge — never stop after push), live verification (visual for UI changes), and close (In Review + evidence). Orchestrates the specialist skills above rather than duplicating them.
 
-When the steps in "Adding a new site" or "Local credentials" above change, update the corresponding skill in the same commit so they do not drift. The same applies to `librechat-hq-theme-patch` whenever the overlay architecture or the image-bump procedure changes.
+When the steps in "Adding a new site" or "Local credentials" above change, update the corresponding skill in the same commit so they do not drift. The same applies to `patch-librechat-theme` whenever the overlay architecture or the image-bump procedure changes.
 
 Edit skill files in `.pi/skills/` directly with the file tools — `skill_manage` cannot patch repo skills (it tracks only its own copies, and silently reintroduces stale content where patch does work).
 

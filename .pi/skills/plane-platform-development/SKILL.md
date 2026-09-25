@@ -1,7 +1,7 @@
 ---
 name: "plane-platform-development"
 description: "Interact with the kra-platform-development Plane project for kra-platform — find spec/feature work items, file new work, and close the loop when done. Use for any Plane lookup, work item creation, or work item status update in this repo."
-version: 1.3
+version: 1.4
 created: "2026-09-23"
 updated: "2026-09-25"
 ---
@@ -38,13 +38,25 @@ These rules are standing instructions from the repository owner and apply to **a
   - Cancelled → `b482efe9-f972-4b2a-a5dc-691269027466` (cancelled)
 - Epic work item type: `211926f4-3894-475a-b394-d0d28e8149a5` (`plane_workitem_type` `resolve` "Epic", `is_epic: true`); project features `epics` + `workitem_types` enabled 2026-09-25 (`plane_project` `update_features`). Epic example: KRA-13 "Update documentation" with children KRA-2..KRA-12.
 - Cycle Sprint 1: `b09126cc-ecb5-4e33-b20b-af190157cfbd` (2026-09-23 → 2026-10-07) — `plane_cycle` `retrieve` gives authoritative dates.
+- Story point estimates: project estimate system "Story Points" (Fibonacci) — estimate_id `0ae0d5bf-0f60-4dd4-80a6-9eb304dcdd85`. Point value → point UUID:
+  - 1 → `075323f2-a128-4bd0-902c-fa6d4aecda83`
+  - 2 → `4468f82a-bc41-4784-b4b8-10b2f6e7764d`
+  - 3 → `4bfecc14-0202-4d00-a79f-043c1a56410b`
+  - 5 → `acc7f504-bc81-4d99-9373-dd4bc32a1f67`
+  - 8 → `e6bf20e7-552c-41d1-a2ad-4d3894da8995`
+  - 13 → `243180cd-8b11-48b7-8512-14aaf94cfc4f`
+- If estimate points are ever added or changed, re-verify with `plane_project_estimate` `retrieve` (estimate_id) + `list_points`.
 
 ## Procedure
 
 1. Verify the server is live: `mcp({})` should show `plane` connected (30 tools, all prefixed `plane_`). If not listed, the session predates `.mcp.json` — ask the user to run `/reload`. If auth fails, the fix is `/mcp-auth plane` in the TUI — tokens are OAuth in the OS keychain, never in this repo.
 2. Find the project's work items: `mcp({ tool: "plane_workitem", args: { action: "list", project_id: PROJECT_ID } })`. Add `pql` for filtering (UUID-backed fields need UUIDs — resolve names first); call `plane_get_pql_reference` for PQL syntax. `action: "search"` with `query` searches the whole workspace.
 3. Read full scope before working: `mcp({ tool: "plane_workitem", args: { action: "retrieve_by_identifier", workitem_identifier: "KRA-NN" } })` — no `project_id` needed; the description is the source of truth for scope and acceptance criteria.
-4. Create a new work item: `mcp({ tool: "plane_workitem", args: { action: "create", project_id: PROJECT_ID, name: "...", description_stripped: "...", priority: "medium" } })` — `priority` is one of `urgent | high | medium | low | none`; `description_stripped` is plain text (wrapped into HTML on save; `description_html` wins if both are given).
+4. Create a new work item: `mcp({ tool: "plane_workitem", args: { action: "create", project_id: PROJECT_ID, name: "...", description_stripped: "...", priority: "medium", estimate_point: POINT_UUID } })`. Mandatory fields and sizing:
+   - ALWAYS include a story point estimate on create — `estimate_point` is a point UUID from Constants, never the numeric value.
+   - Size on the Fibonacci scale against similar past items: small decision/docs fix = 1; ADR or single-file change = 2; CI/Terraform/multi-file change = 3; live-infra verification or multiple systems = 5+.
+   - Never create with `estimate_point` empty — if the size is genuinely uncertain, pick the smallest defensible value and flag it in the item's first comment.
+   - `priority` is one of `urgent | high | medium | low | none`; `description_stripped` is plain text (wrapped into HTML on save; `description_html` wins if both are given).
 5. Reference the item identifier (e.g. `KRA-42`) in branch names and commit messages.
 6. Before starting implementation, follow the Ticket Lifecycle: create the feature branch, move the item to `In Progress`, and post the plan as a comment (`workitem_comment create`).
 7. Close the loop per the Ticket Lifecycle: comment deviations/learnings as they occur; when the work is committed to GitHub, move the item to `In Review` and comment with the commit SHA and verification evidence; move to `Done` only when a human operator explicitly instructs it.
@@ -69,6 +81,7 @@ These rules are standing instructions from the repository owner and apply to **a
 - State-update responses can echo stale `state_group` (moving KRA-9 to Done returned `state_group: "started"` while `state` was the Done UUID and `completed_at` was set). Trust `state` + `completed_at`, or confirm with `retrieve_by_identifier` (`state_group` showed `completed` on the follow-up read).
 - `workitem update` silently ignores `sort_order`: the call returns ok, but `updated_at` stays unchanged and a follow-up read shows the old value (verified 2026-09-23 setting kanban order on KRA-2…KRA-9). Plane's public API does not persist manual kanban ordering via PATCH, and the server exposes no reorder tool. Within-column board order can only be set by dragging cards in the Plane UI, or indirectly by sorting the board by `priority` (which the API does control). Always verify `sort_order` writes with a follow-up `retrieve` — do not trust the ok response.
 - Epics: enable via `plane_project` `update_features` (`epics: true`, `workitem_types: true`) before the Epic type is usable; then `plane_workitem_type` `resolve` (find-or-create, never duplicates). Epics carry no `state_group` (null) — child progress rolls up instead; an epic can still be added to a cycle. Give the epic `start_date`/`target_date` matching the cycle's dates.
+- `estimate_point` takes the point's UUID, never the numeric value — use the value→UUID map in Constants, or resolve via `plane_project_estimate` `retrieve` (for estimate_id) + `list_points`. `plane_project_estimate` has no top-level `list` action. Verify the write with a follow-up read (`estimate_point` shows the UUID on `retrieve_by_identifier`).
 - `plane_cycle` `manage_workitems` `add_ids`/`remove_ids` take a **comma-separated string, not a JSON array** (pydantic rejects lists) and return `null` — verify with `cycle` `list_workitems` afterwards.
 - Work item reads (`list`, `retrieve_by_identifier`, `update` responses) show `cycle_id: null` for **cycle members too** (observed 2026-09-25: every Sprint 1 item, incl. ones confirmed in the cycle, reads back `cycle_id: null`) — `cycle_id` on a work item read is not evidence of cycle membership either way. Verify membership only via `plane_cycle` `list_workitems`.
 - PQL cannot filter on `parent` (rejected: "Filtering on field 'parent' is not allowed") — use the relation function `childOf("KRA-13")` instead. `parent` also does not come back in `workitem list` sparse fieldsets — verify `parent` writes with `retrieve_by_identifier`, not with `list` + `fields`.

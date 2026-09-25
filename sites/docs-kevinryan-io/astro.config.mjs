@@ -14,7 +14,6 @@ import mermaid from 'astro-mermaid';
 const ACCENT_SCRIPT = `
 (function () {
   var MAP = [
-    [/^\\/(specs|provenance)(\\/|$)/, 'teal'],
     [/^\\/adr(\\/|$)/, 'magenta'],
     [/^\\/(k3s|node-access|terraform|cloudflare|traefik|flux-cd)(\\/|$)/, 'cyan'],
     [/^\\/(ci-cd|docker-builds)(\\/|$)/, 'orange'],
@@ -130,22 +129,6 @@ export default defineConfig({
       },
       sidebar: [
         { label: 'Home', link: '/' },
-        {
-          label: 'SDD',
-          collapsed: true,
-          items: [
-            {
-              label: 'Specifications',
-              collapsed: true,
-              autogenerate: { directory: 'specs', collapsed: true },
-            },
-            {
-              label: 'Provenance',
-              collapsed: true,
-              autogenerate: { directory: 'provenance', collapsed: true },
-            },
-          ],
-        },
         {
           label: 'Architecture Decisions',
           collapsed: true,

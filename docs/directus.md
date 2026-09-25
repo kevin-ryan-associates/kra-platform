@@ -5,8 +5,6 @@ description: The Directus headless CMS serving as the shared Digital Asset Manag
 
 Directus is the platform's shared **Digital Asset Management (DAM)** system — an API-first, headless data platform with a visual admin UI, role-based access control, and file management out of the box. It serves at <a href="https://dam.kevinryan.io" target="_blank" rel="noopener noreferrer">dam.kevinryan.io</a> and acts as the operational backbone for the KRA content engine: the single source of truth for content assets (white papers, internal guides, business plans, research PDFs, podcast media, LinkedIn article drafts) that would otherwise get lost, duplicated, or forgotten.
 
-The full build specification is [Spec 0019: Directus DAM](/specs/spec-0019-directus-dam/).
-
 ## Stack
 
 | Technology | Version | Role |
@@ -38,7 +36,7 @@ All credentials flow from Azure Key Vault via External Secrets Operator — noth
 | File storage | `STORAGE_LOCATIONS` (azure), `STORAGE_AZURE_ACCOUNT_NAME`/`_KEY`, `STORAGE_AZURE_CONTAINER_NAME` (`directus-uploads`) |
 | Public URL | `PUBLIC_URL` (`https://dam.kevinryan.io`) |
 
-The backing Azure resources (the `directus_db` database, the Blob Storage account and container, the Key Vault secrets, the Cloudflare DNS record) are provisioned by Terraform per spec-0019 — the manifests only consume them.
+The backing Azure resources (the `directus_db` database, the Blob Storage account and container, the Key Vault secrets, the Cloudflare DNS record) are provisioned by Terraform — the manifests only consume them.
 
 ## Relation to Other Services
 

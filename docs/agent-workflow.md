@@ -39,7 +39,7 @@ Features and specifications are tracked in the **kra-platform-development** proj
 
 Every agent working in this repo follows the **ticket lifecycle**:
 
-1. **Before starting** any feature or spec-driven work, check the project for a matching work item — it is the source of truth for scope and acceptance criteria.
+1. **Before starting** any feature work, check the project for a matching work item — it is the source of truth for scope and acceptance criteria.
 2. **Reference the identifier** (`KRA-NN`) in branch names and commit messages.
 3. **On start**, move the item to `In Progress` and comment the implementation plan (summary, approach, verification) *before* touching code.
 4. **While working**, comment deviations and findings as they occur — root causes, discovered drift, constraints, follow-up work — not batched at the end.

@@ -162,6 +162,7 @@ export default defineConfig({
         { label: 'Observability', link: '/observability/' },
         { label: 'Umami Analytics', link: '/umami/' },
         { label: 'Directus DAM', link: '/directus/' },
+        { label: 'Agent Workflow & Project Management', link: '/agent-workflow/' },
         {
           label: 'Site Architectures',
           collapsed: true,

@@ -167,6 +167,7 @@ export default defineConfig({
           items: [
             { label: 'kevinryan.io', link: '/sites/kevinryan-io/' },
             { label: 'docs.kevinryan.io', link: '/sites/docs-kevinryan-io/' },
+            { label: 'hq.kevinryan.io', link: '/sites/hq-kevinryan-io/' },
             { label: 'brand.kevinryan.io', link: '/sites/brand-kevinryan-io/' },
             { label: 'aiimmigrants.com', link: '/sites/aiimmigrants-com/' },
             { label: 'distributedequity.org', link: '/sites/distributedequity-org/' },

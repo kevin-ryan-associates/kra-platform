@@ -43,7 +43,7 @@ spec:
     branch: main
   secretRef:
     name: flux-system
-  url: https://github.com/DevOpsKev/kevin-ryan-platform.git
+  url: https://github.com/kevin-ryan-associates/kra-platform.git
 ```
 
 **Root Kustomization** — tells Flux which path to reconcile:
@@ -79,11 +79,14 @@ resources:
   - brand-kevinryan-io-sync.yaml
   - aiimmigrants-com-sync.yaml
   - distributedequity-org-sync.yaml
+  - ai-native-engineer-io-sync.yaml
   - docs-kevinryan-io-sync.yaml
   - external-secrets-sync.yaml
   - external-secrets-store-sync.yaml
   - umami-sync.yaml
+  - directus-sync.yaml
   - observability-sync.yaml
+  - hq-kevinryan-io-sync.yaml
 ```
 
 Each `*-sync.yaml` file is a Flux `Kustomization` CR that points to a subdirectory of `k8s/`. This creates a fan-out pattern where the root Kustomization manages child Kustomizations, and each child manages its own set of manifests independently.
@@ -97,13 +100,17 @@ graph TD
     root --> docs["docs-kevinryan-io"]
     root --> ai["aiimmigrants-com"]
     root --> de["distributedequity-org"]
+    root --> ane["ai-native-engineer-io"]
+    root --> hq["hq-kevinryan-io"]
     root --> es["external-secrets"]
     root --> ess["external-secrets-store"]
     root --> umami["umami"]
+    root --> directus["directus"]
     root --> obs["observability"]
 
     es -->|dependsOn| ess
     ess -->|dependsOn| umami
+    ess -->|dependsOn| directus
     ess -->|dependsOn| obs
 ```
 

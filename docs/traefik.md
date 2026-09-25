@@ -85,7 +85,7 @@ spec:
 
 ### Route Inventory
 
-All seven IngressRoutes in the cluster:
+All ten IngressRoutes in the cluster:
 
 | IngressRoute | Namespace | Host Match | Service |
 |-------------|-----------|------------|---------|
@@ -94,6 +94,9 @@ All seven IngressRoutes in the cluster:
 | `docs-kevinryan-io` | `docs-kevinryan-io` | `docs.kevinryan.io` | `docs-kevinryan-io:80` |
 | `aiimmigrants-com` | `aiimmigrants-com` | `aiimmigrants.com` \|\| `www.aiimmigrants.com` | `aiimmigrants-com:80` |
 | `distributedequity-org` | `distributedequity-org` | `distributedequity.org` \|\| `www.distributedequity.org` | `distributedequity-org:80` |
+| `ai-native-engineer-io` | `ai-native-engineer-io` | `ai-native-engineer.io` \|\| `www.ai-native-engineer.io` | `ai-native-engineer-io:80` |
+| `librechat` | `hq-kevinryan-io` | `hq.kevinryan.io` | `librechat:80` |
+| `directus` | `directus` | `dam.kevinryan.io` | `directus:80` |
 | `umami` | `umami` | `analytics.kevinryan.io` | `umami:80` |
 | `grafana` | `observability` | `monitoring.kevinryan.io` | `grafana:80` |
 

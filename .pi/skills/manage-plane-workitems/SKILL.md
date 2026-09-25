@@ -1,5 +1,5 @@
 ---
-name: "plane-platform-development"
+name: "manage-plane-workitems"
 description: "Interact with the kra-platform-development Plane project for kra-platform — find spec/feature work items, file new work, and close the loop when done. Use for any Plane lookup, work item creation, or work item status update in this repo."
 version: 1.4
 created: "2026-09-23"

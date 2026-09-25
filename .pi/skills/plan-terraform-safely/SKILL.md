@@ -1,5 +1,5 @@
 ---
-name: terraform-plan-safe
+name: plan-terraform-safely
 description: Run terraform fmt/validate/plan against infra/ without hanging the
   agent and without leaking secrets. Use for any infra/ change — Terraform
   reads TF_VAR_ secrets from the environment, so the .env.agents source-order

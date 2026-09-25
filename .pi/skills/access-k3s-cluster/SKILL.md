@@ -1,5 +1,5 @@
 ---
-name: k3s-ssh-tunnel-and-deploy
+name: access-k3s-cluster
 description: Establish the kr-node1 SSH tunnel to the K3s API and run kubectl/flux
   against the kra-platform cluster without hanging the agent. Use before any
   kubectl, flux, kubectx, or k9s command, or when a deploy/inspect task targets
@@ -24,7 +24,7 @@ and flux hang on connect** — a primary cause of agent freezes that force
 
 ## Procedure
 
-1. Load secrets once per shell session (see the `terraform-plan-safe` skill for
+1. Load secrets once per shell session (see the `plan-terraform-safely` skill for
    the full `.env.agents` flow — `KUBECONFIG` is set there):
 
    ```bash

@@ -1,5 +1,5 @@
 ---
-name: work-item-development
+name: develop-work-item
 description: End-to-end development of a Plane work item in kra-platform — intake,
   implementation, PR, CI, deploy, live verification, and In Review. Use whenever a
   task means implementing a KRA-NN item through to a deployed, verified change, or
@@ -20,12 +20,12 @@ updated: "2026-09-25"
 This is the **orchestrating workflow** — it does not duplicate the specialist
 skills; load them when a step enters their domain:
 
-- `plane-platform-development` — Plane MCP mechanics + the mandatory Ticket
+- `manage-plane-workitems` — Plane MCP mechanics + the mandatory Ticket
   Lifecycle protocol (state transitions, plan/deviation comments, Done rules).
-- `k3s-ssh-tunnel-and-deploy` — cluster access, Flux reconciliation, deploy checks.
-- `terraform-plan-safe` — any `infra/` change.
-- `librechat-hq-theme-patch` — any hq.kevinryan.io change.
-- `flux-onboard-site` — adding a new site.
+- `access-k3s-cluster` — cluster access, Flux reconciliation, deploy checks.
+- `plan-terraform-safely` — any `infra/` change.
+- `patch-librechat-theme` — any hq.kevinryan.io change.
+- `onboard-flux-site` — adding a new site.
 
 ## Procedure
 
@@ -34,7 +34,7 @@ skills; load them when a step enters their domain:
 - Before starting feature work, check the kra-platform-development project for
   a matching work item (the work item is the source of truth for scope and
   acceptance criteria). If none exists, file one — **with a story point
-  estimate** (mandatory — see `plane-platform-development` Constants).
+  estimate** (mandatory — see `manage-plane-workitems` Constants).
 - **Filing a ticket is not authorization to implement** — start implementation
   only when the user explicitly says so (user correction, 2026-09-25).
 - Read the item with `retrieve_by_identifier` before working it.
@@ -85,7 +85,7 @@ After the merge lands on `main`, the job is not done until the change is live:
 
 1. Watch GitHub Actions CI to completion (`gh run watch` / `gh run list`).
 2. Watch Flux reconciliation on the cluster until the new image is serving
-   (`k3s-ssh-tunnel-and-deploy` skill — tunnel first, `--request-timeout=30s`).
+   (`access-k3s-cluster` skill — tunnel first, `--request-timeout=30s`).
 3. Purge the Cloudflare cache for the affected site — a stale page right
    after a successful deploy is **Cloudflare edge cache** (`cf-cache-status:
    HIT`), NOT a Flux failure. `purge_everything` via the Cloudflare API with

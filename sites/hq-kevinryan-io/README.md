@@ -7,7 +7,7 @@ configuration reference files, the **theme overlay source** (CSS + favicons),
 and the Kubernetes manifests under `k8s/hq-kevinryan-io/`.
 
 > **Before changing theming/branding or the LibreChat image**, read the
-> `.pi/skills/librechat-hq-theme-patch/SKILL.md` procedure. The overlay is
+> `.pi/skills/patch-librechat-theme/SKILL.md` procedure. The overlay is
 > sed-patched onto the upstream `index.html` and guarded — image bumps
 > require the throwaway-pod guard test.
 

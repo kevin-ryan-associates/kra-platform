@@ -4,7 +4,7 @@ description: End-to-end development of a Plane work item in kra-platform — int
   implementation, PR, CI, deploy, live verification, and In Review. Use whenever a
   task means implementing a KRA-NN item through to a deployed, verified change, or
   when coordinating code change, deploy, and ticket lifecycle in one pass.
-version: 1.0
+version: 1.1
 created: "2026-09-25"
 updated: "2026-09-25"
 ---
@@ -35,6 +35,19 @@ skills; load them when a step enters their domain:
   a matching work item (the work item is the source of truth for scope and
   acceptance criteria). If none exists, file one — **with a story point
   estimate** (mandatory — see `manage-plane-workitems` Constants).
+- **Always work within the scope of the current iteration** — every work
+  item created in Plane MUST be added to the current cycle ("Iteration N")
+  at creation time. Never file a work item outside an iteration.
+- **If no current iteration exists, create one before filing the item**:
+  name it "Iteration N" in numerical order from the last existing iteration
+  (`plane_cycle` `list` → highest N → create "Iteration N+1"). Iterations are
+  7 days long, Monday of the current week → Sunday (`start_date` = the
+  Monday of this week, `end_date` = the following Sunday), so mid-week
+  creation still anchors to this week's Monday.
+- Add the item to the iteration with `plane_cycle` `manage_workitems`
+  `add_ids`, then verify membership with `plane_cycle` `list_workitems`
+  (work item reads show `cycle_id: null` even for cycle members — cycle
+  tool quirks are in the `manage-plane-workitems` skill).
 - **Filing a ticket is not authorization to implement** — start implementation
   only when the user explicitly says so (user correction, 2026-09-25).
 - Read the item with `retrieve_by_identifier` before working it.

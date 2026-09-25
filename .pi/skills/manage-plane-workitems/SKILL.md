@@ -37,7 +37,7 @@ These rules are standing instructions from the repository owner and apply to **a
   - Done → `468f6292-b286-4185-8c3a-de55424c1697` (completed)
   - Cancelled → `b482efe9-f972-4b2a-a5dc-691269027466` (cancelled)
 - Epic work item type: `211926f4-3894-475a-b394-d0d28e8149a5` (`plane_workitem_type` `resolve` "Epic", `is_epic: true`); project features `epics` + `workitem_types` enabled 2026-09-25 (`plane_project` `update_features`). Epic example: KRA-13 "Update documentation" with children KRA-2..KRA-12.
-- Cycle Iteration 1 (renamed from "Sprint 1" 2026-09-25; dates retrofitted to the Mon→Sun convention — now 2026-09-21 → 2026-10-04; name future cycles "Iteration N", each Mon→Sun, 7 days, created per the `develop-work-item` skill's Intake rules): `b09126cc-ecb5-4e33-b20b-af190157cfbd` — `plane_cycle` `retrieve` gives authoritative dates.
+- Cycle Iteration 1 (renamed from "Sprint 1" 2026-09-25; dates set to 2026-09-21 → 2026-09-27, Mon→Sun; name future cycles "Iteration N", each Mon→Sun, 7 days, created per the `develop-work-item` skill's Intake rules): `b09126cc-ecb5-4e33-b20b-af190157cfbd` — `plane_cycle` `retrieve` gives authoritative dates.
 - Story point estimates: project estimate system "Story Points" (Fibonacci) — estimate_id `0ae0d5bf-0f60-4dd4-80a6-9eb304dcdd85`. Point value → point UUID:
   - 1 → `075323f2-a128-4bd0-902c-fa6d4aecda83`
   - 2 → `4468f82a-bc41-4784-b4b8-10b2f6e7764d`

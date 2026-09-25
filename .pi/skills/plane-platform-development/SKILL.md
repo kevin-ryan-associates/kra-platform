@@ -1,7 +1,7 @@
 ---
 name: "plane-platform-development"
 description: "Interact with the kra-platform-development Plane project for kra-platform — find spec/feature work items, file new work, and close the loop when done. Use for any Plane lookup, work item creation, or work item status update in this repo."
-version: 1.2
+version: 1.3
 created: "2026-09-23"
 updated: "2026-09-25"
 ---
@@ -14,15 +14,16 @@ Any time work in this repo touches Plane: checking the kra-platform-development 
 
 These rules are standing instructions from the repository owner and apply to **all** implementation work driven by a Plane work item in this repo. An agent that starts a Plane item without following them is out of compliance.
 
-1. **In Progress on start.** The moment you begin implementing a work item, move it to `In Progress`:
+1. **Feature branch on start.** Create a feature branch before making any changes — named after the item (`kra-NN`) or a scope name for multi-item work (e.g. `kra-13-docs`). Never commit work-item changes directly to `main` unless the user explicitly instructs otherwise for that specific change. Merge back via PR (or push to the branch and let the user decide the merge, per their direction).
+2. **In Progress on start.** The moment you begin implementing a work item, move it to `In Progress`:
    `mcp({ tool: "plane_workitem", args: { action: "update", project_id: PROJECT_ID, workitem_id: <uuid>, state: IN_PROGRESS_UUID } })`.
-2. **Post the plan before implementing.** Before touching any code, comment on the item with the implementation plan (summary, files/approach, verification steps):
+3. **Post the plan before implementing.** Before touching any code, comment on the item with the implementation plan (summary, files/approach, verification steps):
    `mcp({ tool: "plane_workitem_comment", args: { action: "create", project_id: PROJECT_ID, workitem_id: <uuid>, comment_html: "<p>...</p>" } })`.
    The posted plan is the source of truth that reviewers and later agents diff against.
-3. **Log deviations and learnings as they occur.** Any deviation from the posted plan — or important information gained while working (root causes, discovered drift, constraints, follow-up work) — becomes a comment on the item as it is discovered, not batched into a single end-of-task comment.
-4. **In Review once committed.** When the work is complete and committed/pushed to GitHub, move the item to `In Review` and comment with the commit SHA / PR link and verification evidence:
+4. **Log deviations and learnings as they occur.** Any deviation from the posted plan — or important information gained while working (root causes, discovered drift, constraints, follow-up work) — becomes a comment on the item as it is discovered, not batched into a single end-of-task comment.
+5. **In Review once committed.** When the work is complete and committed/pushed to GitHub, move the item to `In Review` and comment with the commit SHA / PR link and verification evidence:
    `workitem update` with `state: IN_REVIEW_UUID` + `workitem_comment create`.
-5. **Done only on human instruction.** Never transition an item to `Done` on your own initiative — not even when CI, deploys, and verification all pass. `Done` happens only when a human operator explicitly says so.
+6. **Done only on human instruction.** Never transition an item to `Done` on your own initiative — not even when CI, deploys, and verification all pass. `Done` happens only when a human operator explicitly says so.
 
 ## Constants (verified live 2026-09-23)
 
@@ -45,7 +46,7 @@ These rules are standing instructions from the repository owner and apply to **a
 3. Read full scope before working: `mcp({ tool: "plane_workitem", args: { action: "retrieve_by_identifier", workitem_identifier: "KRA-NN" } })` — no `project_id` needed; the description is the source of truth for scope and acceptance criteria.
 4. Create a new work item: `mcp({ tool: "plane_workitem", args: { action: "create", project_id: PROJECT_ID, name: "...", description_stripped: "...", priority: "medium" } })` — `priority` is one of `urgent | high | medium | low | none`; `description_stripped` is plain text (wrapped into HTML on save; `description_html` wins if both are given).
 5. Reference the item identifier (e.g. `KRA-42`) in branch names and commit messages.
-6. Before starting implementation, follow the Ticket Lifecycle: move the item to `In Progress` and post the plan as a comment (`workitem_comment create`).
+6. Before starting implementation, follow the Ticket Lifecycle: create the feature branch, move the item to `In Progress`, and post the plan as a comment (`workitem_comment create`).
 7. Close the loop per the Ticket Lifecycle: comment deviations/learnings as they occur; when the work is committed to GitHub, move the item to `In Review` and comment with the commit SHA and verification evidence; move to `Done` only when a human operator explicitly instructs it.
 
 ## Pitfalls

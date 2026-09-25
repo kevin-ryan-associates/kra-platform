@@ -116,7 +116,35 @@ and fails on drift.
   patch also deletes them for the patched file. And after any bundle patch
   rollout, **purge the Cloudflare cache** — the edge has the stale
   compressed object cached (s-maxage 86400) for both the query-less and
-  `?v=` URLs.
+  `?v=` URLs. Debug what browsers actually receive with
+  `curl --compressed` — that is what the server (and the edge) prefer to
+  serve.
+- **Health probes are `httpGet /health`, not `tcpSocket`** — a tcpSocket
+  probe passed at the socket level before the app could serve HTTP, causing
+  restart loops. Probe definitions live in `k8s/hq-kevinryan-io/deployment.yaml`.
+- **`agent_id is required` when sending a message = no available models** —
+  the fix is the `ANTHROPIC_MODELS` env var (comma-separated live model IDs
+  from the Anthropic `/v1/models` API), set in
+  `k8s/hq-kevinryan-io/configmap.yaml`. Never configure models via
+  `librechat.yaml` `endpoints.anthropic.models` — the object format is
+  Vertex-only and Zod rejects it → CrashLoopBackOff. An empty Key Vault
+  `anthropic-api-key` produces the same symptom — check both.
+- **Tailwind utilities compile to LITERAL HEX, and `applyTheme()` sets
+  `--surface-*` inline on `<html>` at mount** — `:root`/`.dark` variable
+  overrides have NO effect on utility surfaces (`bg-gray-*`); semantic
+  classes (`bg-surface-primary`) DO respond. Theme utility surfaces with
+  `!important` selector overrides
+  (`.dark .dark\:bg-gray-900{background-color:#222436 !important}`) — the
+  mechanism the current `custom-theme.css` gray-ramp → Moon-surface mapping
+  is built on.
+- **When a CSS override appears to fail, check selector specificity FIRST —
+  not caching.** Reliable canary: `border-radius:0` on the auth inputs +
+  the Continue button.
+- **Wait for `kubectl rollout status` before verifying through the edge** —
+  probing a freshly-busted `?v=<new>` URL during the Flux reconcile window
+  makes Cloudflare cache the stale origin response under the NEW URL:
+  `?v=` busts the browser cache, not the edge. If already cached stale, a
+  manual zone purge is required.
 - Non-English locales still carry upstream strings — only the en locale is
   patched (compiled bundles, solo English user). Guard-test catches wording
   changes on image bumps.

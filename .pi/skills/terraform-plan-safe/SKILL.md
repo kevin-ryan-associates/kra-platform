@@ -81,6 +81,31 @@ Sensitive variables (set in `.env.agents` as `TF_VAR_*`):
   `-auto-approve` and a saved plan, and only after explicit user confirmation.
 - The repo is **public** — never let a secret reach stdout in a way that gets
   committed. `terraform plan` masks sensitive values; verify the mask holds.
+- `terraform state push` fails with "cannot overwrite existing state with
+  serial N…" on a serial match — bump `serial` +1 in the pulled JSON
+  (preserve the `lineage` UUID) before pushing back.
+- **`TF_VAR_anthropic_api_key` is empty both in `.env.agents` and in the
+  GitHub Actions secret** — plans show `azurerm_key_vault_secret.
+  anthropic_api_key` value → null, and an approved CI apply would break hq's
+  Claude endpoint. Verify env vars without printing values; populate both
+  before any apply.
+- CI tfplan artifacts are **version-locked** (CI terraform 1.16.4 vs local
+  1.15.8, no tfenv) — download the matching `darwin_arm64` binary to /tmp and
+  run `terraform show` **from `infra/`** (provider plugins are cached there);
+  running it elsewhere fails with "Failed to load plugin schemas".
+- CI (`terraform.yml`) passes no `TF_VAR_*` and cannot read gitignored
+  `terraform.tfvars` — CI applies use the **variable defaults**, so defaults
+  are live values; stale defaults are apply hazards.
+- The terraform apply job is gated on the `production` environment —
+  unapproved runs queue indefinitely (`gh run cancel` stale ones); decode
+  the tfplan artifact before approving.
+- After `az ad app credential reset --id <appId> --append --years 1`, the
+  new secret is unusable for ~30-60s (AADSTS7000215) until Azure AD replicas
+  converge — wait ~45s and retry. `--append` preserves existing credentials
+  (incl. OIDC federated).
+- When a plan needs **new** Azure Key Vault secrets, create them proactively
+  (`az keyvault secret set`, values via `openssl rand`) — never just document
+  them as manual prerequisites.
 
 ## Verification
 

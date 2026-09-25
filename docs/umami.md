@@ -1,6 +1,6 @@
 ---
 title: Umami Analytics
-description: How privacy-focused web analytics are collected across all sites using a self-hosted Umami instance backed by PostgreSQL and deployed via Flux CD.
+description: How privacy-focused web analytics are collected across the platform's sites using a self-hosted Umami instance backed by PostgreSQL and deployed via Flux CD.
 ---
 
 This platform uses <a href="https://umami.is/" target="_blank" rel="noopener noreferrer">Umami</a>, a self-hosted, privacy-focused web analytics tool, to track visitor activity across all seven sites. Umami is deployed as a Kubernetes workload within the cluster, backed by Azure PostgreSQL, and accessible at <a href="https://analytics.kevinryan.io" target="_blank" rel="noopener noreferrer">analytics.kevinryan.io</a>.
@@ -29,6 +29,8 @@ Every site in the platform includes the Umami tracking script. Each site has a u
 | AI Immigrants | aiimmigrants.com | `c9c48aa2-f7c6-495f-bbed-5837392834ba` |
 | Distributed Equity | distributedequity.org | `0b17c94d-4711-4454-9c5b-ea437abaaf87` |
 | The AI-Native Engineer | ai-native-engineer.io | `38d895e8-552c-4dc8-a3f0-a493d49d75e2` |
+
+> aiimmigrants.com and distributedequity.org have Umami websites registered but currently ship no tracking script — the IDs above are provisional until tracking is added (see the follow-up work item).
 
 ### Script Snippet
 

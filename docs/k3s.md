@@ -177,8 +177,8 @@ After K3s is running on node1, the cloud-init script bootstraps Flux CD:
 ```bash
 flux bootstrap github \
   --kubeconfig=/etc/rancher/k3s/k3s.yaml \
-  --owner=DevOpsKev \
-  --repository=kevin-ryan-platform \
+  --owner=kevin-ryan-associates \
+  --repository=kra-platform \
   --branch=main \
   --path=k8s/flux-system \
   --personal \

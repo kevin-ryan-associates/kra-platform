@@ -161,12 +161,16 @@ export default defineConfig({
         { label: 'Docker Builds', link: '/docker-builds/' },
         { label: 'Observability', link: '/observability/' },
         { label: 'Umami Analytics', link: '/umami/' },
+        { label: 'Directus DAM', link: '/directus/' },
+        { label: 'Agent Workflow & Project Management', link: '/agent-workflow/' },
         {
           label: 'Site Architectures',
           collapsed: true,
           items: [
             { label: 'kevinryan.io', link: '/sites/kevinryan-io/' },
             { label: 'docs.kevinryan.io', link: '/sites/docs-kevinryan-io/' },
+            { label: 'hq.kevinryan.io', link: '/sites/hq-kevinryan-io/' },
+            { label: 'ai-native-engineer.io', link: '/sites/ai-native-engineer-io/' },
             { label: 'brand.kevinryan.io', link: '/sites/brand-kevinryan-io/' },
             { label: 'aiimmigrants.com', link: '/sites/aiimmigrants-com/' },
             { label: 'distributedequity.org', link: '/sites/distributedequity-org/' },

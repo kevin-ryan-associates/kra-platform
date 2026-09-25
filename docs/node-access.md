@@ -43,17 +43,26 @@ curl -s https://ifconfig.me
 
 Append `/32` for the CIDR, e.g. `203.0.113.5/32`.
 
-### 2.2 Edit your real `terraform.tfvars`
+### 2.2 Update the Terraform inputs
 
-> `terraform.tfvars` is gitignored and holds the live values. Do not edit the committed `terraform.tfvars.example`.
+The two inputs live in different files.
+
+`admin_ssh_public_key` — in the gitignored `infra/terraform.tfvars` (live values; do not edit the committed `terraform.tfvars.example`):
 
 ```hcl
-admin_ip             = "203.0.113.5/32"
 admin_ssh_public_key = "ssh-ed25519 AAAA... kevinryan-io-admin"
 ```
 
-- `admin_ip` — the only source address TCP/22 is admitted from. Both nodes share the NSG, so this single value admits you to both.
-- `admin_ssh_public_key` — the contents of `~/.ssh/kr_admin_ed25519.pub` as a single line.
+`admin_ip` — in the committed `infra/admin-allowlist.tf` (`local.admin_ip`). Update the CIDR and push to `main`; the Terraform Plan and Apply workflow deploys it automatically (no local `terraform apply` needed):
+
+```hcl
+locals {
+  admin_ip = "203.0.113.5/32"
+}
+```
+
+- `admin_ip` is the only source address TCP/22 is admitted from. Both nodes share the NSG, so this single value admits you to both.
+- `admin_ssh_public_key` is the contents of `~/.ssh/kr_admin_ed25519.pub` as a single line.
 
 ### 2.3 Preview the plan
 
@@ -190,7 +199,7 @@ kr-tunnel-down          # API tunnel down
 
 ## When your public IP changes
 
-If `ssh` starts timing out, your public IP has likely rotated. Repeat step 2 (find the IP, update `admin_ip` in `terraform.tfvars`, `terraform apply`) — this touches only the NSG rule, not the VMs. The SSH key and kubeconfig do not need to change.
+If `ssh` starts timing out, your public IP has likely rotated. Repeat step 2 (find the IP, update `local.admin_ip` in `infra/admin-allowlist.tf`, push to `main` for the Terraform workflow to apply) — this touches only the NSG rule, not the VMs. The SSH key and kubeconfig do not need to change.
 
 ## Rotating the SSH key
 
@@ -207,7 +216,7 @@ To replace the admin key (e.g. a compromised or lost laptop):
 - [ ] `ssh kr-node1` and `ssh kr-node2` succeed with the new key and print the right hostname.
 - [ ] With the tunnel up, `KUBECONFIG=~/.kube/kr-k3s.yaml kubectl get nodes` returns both nodes `Ready`.
 - [ ] `k9s` opens on the laptop and shows the live K3s cluster (flux-system and site namespaces present).
-- [ ] The `admin_ip` in `terraform.tfvars` matches the IP you SSH from, and this runbook documents how to update it when it changes.
+- [ ] The `admin_ip` in `infra/admin-allowlist.tf` matches the IP you SSH from, and this runbook documents how to update it when it changes.
 
 ## Notes and out of scope
 

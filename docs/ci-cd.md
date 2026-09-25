@@ -3,7 +3,7 @@ title: GitHub Actions Workflows
 description: Comprehensive guide to the GitHub Actions workflows that build, deploy, and manage infrastructure for the Kevin Ryan platform.
 ---
 
-This platform uses GitHub Actions for all CI/CD. There are two workflows in total — one unified site deployment workflow (`deploy.yml`) and one infrastructure workflow (`terraform.yml`). All workflow files live in `.github/workflows/`.
+This platform uses GitHub Actions for all CI/CD. There are three workflows in total — a unified site deployment workflow (`deploy.yml`), an infrastructure workflow (`terraform.yml`), and a validation workflow (`validate.yml`). All workflow files live in `.github/workflows/`.
 
 ## Design Principles
 
@@ -73,11 +73,13 @@ The manifest change is committed as `[deploy] <site>: <sha>` and pushed to `main
 
 ### Workflow Inventory
 
-All sites are deployed by a single workflow:
+The repo's three workflows and their trigger paths:
 
-| Workflow | File | Trigger Path | Sites |
+| Workflow | File | Trigger Path | Scope |
 |----------|------|--------------|-------|
-| Build and Deploy Site | `deploy.yml` | `sites/**` and `docs/**` | aiimmigrants.com, brand.kevinryan.io, distributedequity.org, docs.kevinryan.io, kevinryan.io. (hq.kevinryan.io deploys LibreChat from the upstream pre-built image and has no Dockerfile, so the deploy workflow auto-skips it; its manifests deploy via Flux.) |
+| Build and Deploy Site | `deploy.yml` | `sites/**` and `docs/**` | All sites with a Dockerfile (aiimmigrants.com, brand.kevinryan.io, distributedequity.org, docs.kevinryan.io, kevinryan.io; hq.kevinryan.io deploys LibreChat from the upstream pre-built image and has no Dockerfile, so the deploy workflow auto-skips it — its manifests deploy via Flux) |
+| Terraform Plan and Apply | `terraform.yml` | `infra/**` | Azure infrastructure |
+| Validate | `validate.yml` | `k8s/**`, `sites/hq-kevinryan-io/**`, `scripts/**` | Manifest linting + HQ theme drift check |
 
 The `detect` job maps changed paths to sites: files under `sites/<site>/…` map to that site, and files under `docs/…` map to the `docs-kevinryan-io` site, since the docs site symlinks content from the `docs/` directory. Increasing the SHA range (or choosing `all` in `workflow_dispatch`) gives rebuilds for multiple sites in a single run via the matrix.
 
@@ -150,6 +152,17 @@ The Terraform workflow passes several secrets as environment variables:
 | `TF_VAR_cloudflare_zone_id` | Cloudflare DNS zone |
 | `TF_VAR_acr_name` | Azure Container Registry name |
 | `TF_VAR_github_token` | Flux CD GitHub access |
+
+## Validate Workflow
+
+The `validate.yml` workflow guards manifest and overlay quality. It triggers on pushes to `main` and on pull requests (both path-filtered) whenever `k8s/**`, `sites/hq-kevinryan-io/**`, `scripts/**`, or the workflow file itself changes, plus `workflow_dispatch` for manual runs.
+
+It runs a single `manifests` job with two checks:
+
+1. **yamllint** — lints every Kubernetes manifest and workflow file (`yamllint -s .github/workflows/ k8s/`), catching indentation and quoting errors before Flux ever sees them.
+2. **HQ theme drift check** — runs `scripts/sync-hq-theme.sh --check`, regenerating the `librechat-custom` ConfigMap from the theme sources and failing if the committed ConfigMap differs. This is the CI-side half of the ADR-023 overlay contract: the deployed HQ theming must always be derivable from `sites/hq-kevinryan-io/` sources, never hand-edited. (The script uses `kubectl create configmap --dry-run=client` to generate the expected output, so kubectl is installed client-only — no cluster access.)
+
+The workflow only requests `contents: read` — it is read-only by design and never writes to the repository or touches the cluster.
 
 ## Security Considerations
 

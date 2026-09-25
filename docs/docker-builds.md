@@ -9,7 +9,7 @@ Every site in the platform is containerised and served by nginx. The Dockerfile 
 
 | Strategy | Sites | Base Images |
 |----------|-------|-------------|
-| Multi-stage | kevinryan.io, docs.kevinryan.io | `node:22.22.0-alpine3.23` → `nginx:1.28.2-alpine` |
+| Multi-stage | kevinryan.io, docs.kevinryan.io, ai-native-engineer.io | `node:22.22.0-alpine3.23` → `nginx:1.28.2-alpine` |
 | Single-stage | brand, aiimmigrants, distributedequity | `nginx:1.28.2-alpine` |
 
 ## Multi-Stage Builds
@@ -144,7 +144,7 @@ Key details:
 
 ## Single-Stage Builds
 
-The five static HTML sites have no build step. Their Dockerfiles copy pre-built `public/` files straight into nginx:
+The three static HTML sites have no build step. Their Dockerfiles copy pre-built `public/` files straight into nginx:
 
 ```dockerfile
 FROM nginx:1.28.2-alpine
@@ -171,7 +171,7 @@ The `COMMIT_SHA` is injected at build time via `sed`, replacing a `{{COMMIT_SHA}
 
 ## Shared Conventions
 
-All seven Dockerfiles share these conventions regardless of build strategy:
+All six Dockerfiles share these conventions regardless of build strategy:
 
 ### Non-Root Execution
 

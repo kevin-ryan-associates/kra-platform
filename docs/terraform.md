@@ -163,8 +163,8 @@ The server node's cloud-init performs:
   export GITHUB_TOKEN="${github_token}"
   flux bootstrap github \
     --kubeconfig=/etc/rancher/k3s/k3s.yaml \
-    --owner=DevOpsKev \
-    --repository=kevin-ryan-platform \
+    --owner=kevin-ryan-associates \
+    --repository=kra-platform \
     --branch=main \
     --path=k8s/flux-system \
     --personal \
@@ -322,8 +322,8 @@ Configures passwordless authentication between GitHub Actions and Azure using Op
 
 | Credential | Subject |
 |------------|---------|
-| `main-branch` | `repo:DevOpsKev/kevin-ryan-platform:ref:refs/heads/main` |
-| `production-env` | `repo:DevOpsKev/kevin-ryan-platform:environment:production` |
+| `main-branch` | `repo:kevin-ryan-associates/kra-platform:ref:refs/heads/main` |
+| `production-env` | `repo:kevin-ryan-associates/kra-platform:environment:production` |
 
 The `main-branch` credential allows deploy workflows to authenticate. The `production-env` credential allows the Terraform apply job (which runs in the `production` GitHub environment) to authenticate.
 

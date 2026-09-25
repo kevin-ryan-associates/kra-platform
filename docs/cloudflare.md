@@ -41,13 +41,14 @@ graph LR
 
 ## Domain Zones
 
-Three separate Cloudflare zones are managed, each with its own zone ID:
+Four separate Cloudflare zones are managed, each with its own zone ID:
 
 | Zone | Domain | Subdomains | Terraform Reference |
 |------|--------|------------|-------------------|
-| kevinryan.io | `kevinryan.io` | `www`, `brand`, `docs`, `analytics`, `monitoring` | `module.cloudflare` + root records |
+| kevinryan.io | `kevinryan.io` | `www`, `brand`, `docs`, `hq`, `analytics`, `monitoring`, `dam` | `module.cloudflare` + root records |
 | aiimmigrants.com | `aiimmigrants.com` | `www` | `module.cloudflare_aiimmigrants` |
 | distributedequity.org | `distributedequity.org` | `www` | `module.cloudflare_distributedequity` |
+| ai-native-engineer.io | `ai-native-engineer.io` | `www` | `module.cloudflare_ainativeengineer` |
 
 ## DNS Records
 
@@ -191,8 +192,10 @@ resource "cloudflare_ruleset" "cache" {
 The cache rule applies to all hostnames in the zone. The expression is dynamically constructed from the domain and its subdomains:
 
 ```text
-(http.host eq "kevinryan.io") or (http.host eq "www.kevinryan.io") or (http.host eq "brand.kevinryan.io") or (http.host eq "docs.kevinryan.io")
+(http.host eq "kevinryan.io") or (http.host eq "www.kevinryan.io") or (http.host eq "brand.kevinryan.io") or (http.host eq "docs.kevinryan.io") or (http.host eq "hq.kevinryan.io")
 ```
+
+Subdomains listed in `cache_bypass_subdomains` (currently `hq`) additionally get a **bypass rule**: cache is skipped for auth, API, login, and root routes on those hosts, so the LibreChat app never serves a cached login or API response.
 
 For zones without subdomains (e.g. `aiimmigrants.com`), the expression covers just the root and www:
 

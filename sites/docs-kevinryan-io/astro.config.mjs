@@ -161,6 +161,7 @@ export default defineConfig({
         { label: 'Docker Builds', link: '/docker-builds/' },
         { label: 'Observability', link: '/observability/' },
         { label: 'Umami Analytics', link: '/umami/' },
+        { label: 'Directus DAM', link: '/directus/' },
         {
           label: 'Site Architectures',
           collapsed: true,

@@ -153,7 +153,7 @@ Beyond the seven sites, the cluster runs shared platform services:
 
 - **Umami:** <a href="https://analytics.kevinryan.io" target="_blank" rel="noopener noreferrer">analytics.kevinryan.io</a> — Privacy-focused web analytics (PostgreSQL-backed)
 - **Grafana:** <a href="https://monitoring.kevinryan.io" target="_blank" rel="noopener noreferrer">monitoring.kevinryan.io</a> — Dashboards, with Loki for log aggregation, Promtail for log collection, and VictoriaMetrics for metrics
-- **Directus:** Headless CMS serving as a shared digital asset management layer (`k8s/directus/`, spec-0019)
+- **Directus:** Headless CMS serving as a shared digital asset management layer — see the [Directus DAM guide](/directus/)
 
 Both services retrieve credentials from Azure Key Vault via External Secrets Operator.
 

@@ -25,30 +25,42 @@ The tradeoff is a larger repository, but path-filtered CI/CD workflows ensure th
 | Portfolio | [kevinryan.io](https://kevinryan.io) | Next.js 16, React 19, TypeScript, Tailwind CSS 4 | `next build` (static export) |
 | Brand Guidelines | [brand.kevinryan.io](https://brand.kevinryan.io) | Static HTML | None |
 | Docs | [docs.kevinryan.io](https://docs.kevinryan.io) | Astro Starlight | `astro build` |
+| HQ (LibreChat) | [hq.kevinryan.io](https://hq.kevinryan.io) | Upstream LibreChat image (digest-pinned), internal MongoDB | None — upstream image, no build step |
+| AI-Native Engineer | [ai-native-engineer.io](https://ai-native-engineer.io) | Astro 5, TypeScript | `astro build` |
 | AI Immigrants | [aiimmigrants.com](https://aiimmigrants.com) | Static HTML | None |
 | Distributed Equity | [distributedequity.org](https://distributedequity.org) | Static HTML | None |
 
-Sites with no build step serve static HTML directly via nginx. All sites are containerised and deployed identically regardless of their build toolchain.
+Sites with no build step serve static HTML directly via nginx. All sites are containerised and deployed identically regardless of their build toolchain. **hq.kevinryan.io is the exception**: it deploys the upstream pre-built LibreChat image (never `:latest`) with theming applied as an overlay layer — see ADR-023.
 
 ## Repository Structure
 
 ```text
 kevin-ryan-platform/
-├── .github/workflows/         # CI/CD — one deploy workflow per site, plus Terraform
+├── .github/workflows/         # CI/CD — shared deploy workflow, Terraform, and validation
 ├── infra/                     # Terraform — Azure VMs, ACR, Key Vault, PostgreSQL, Cloudflare DNS
+├── scripts/                   # Helper scripts (sync-hq-theme.sh — HQ theme ConfigMap sync)
 ├── k8s/                       # Kubernetes manifests
 │   ├── flux-system/           # Flux CD bootstrap + per-site Kustomization CRs
-│   ├── <site-name>/           # Deployment, Service, IngressRoute per site
+│   ├── kevinryan-io/           # Plain manifests (static export)
+│   ├── hq-kevinryan-io/        # Plain manifests (LibreChat + theme overlay)
+│   ├── docs-kevinryan-io/      # Plain manifests (Astro static)
+│   ├── brand-kevinryan-io/     # Plain manifests (static HTML)
+│   ├── aiimmigrants-com/      # Plain manifests (static HTML)
+│   ├── distributedequity-org/ # Plain manifests (static HTML)
+│   ├── ai-native-engineer-io/ # Plain manifests (Astro static export)
+│   ├── directus/              # Directus headless CMS (shared)
 │   ├── external-secrets/      # External Secrets Operator
 │   ├── external-secrets-store/ # ClusterSecretStore (Azure Key Vault)
 │   ├── umami/                 # Umami analytics
 │   └── observability/         # Grafana, Loki, Promtail, VictoriaMetrics
 ├── sites/                     # Application code — one directory per site
 │   ├── kevinryan-io/          # Next.js 16 (App Router)
-│   ├── brand-kevinryan-io/    # Static HTML
+│   ├── hq-kevinryan-io/       # LibreChat (upstream image + theme overlay — no build step)
 │   ├── docs-kevinryan-io/     # Astro Starlight
+│   ├── brand-kevinryan-io/    # Static HTML
 │   ├── aiimmigrants-com/      # Static HTML
-│   └── distributedequity-org/ # Static HTML
+│   ├── distributedequity-org/ # Static HTML
+│   └── ai-native-engineer-io/ # Astro 5 book site
 ├── docs/                      # Documentation content (symlinked into docs site)
 └── pnpm-workspace.yaml
 ```
@@ -59,7 +71,7 @@ kevin-ryan-platform/
 graph TD
     subgraph repo["Monorepo — kevin-ryan-platform"]
         direction LR
-        sites["Sites ×5"]
+        sites["Sites ×7"]
         k8smanifests["K8s Manifests"]
         tf["Terraform"]
     end
@@ -78,7 +90,8 @@ graph TD
             flux["Flux CD"]
             traefik["Traefik"]
             subgraph workloads["Workloads"]
-                sd["Site Deployments ×5"]
+                sd["Site Deployments ×7"]
+                directus["Directus CMS"]
                 umami["Umami Analytics"]
                 obs["Grafana · Loki · VictoriaMetrics"]
             end
@@ -99,7 +112,7 @@ graph TD
     tf -->|manages| cf
     acr -.->|image pull| k3s
     kv -.->|secrets| eso
-    eso -.-> umami & obs
+    eso -.-> umami & obs & directus
     pg -.->|data| umami & obs
     cf -->|routes traffic| traefik
     traefik --> workloads
@@ -136,10 +149,11 @@ Flux CD watches the `k8s/` directory and reconciles cluster state every 10 minut
 
 ## Shared Services
 
-Beyond the five sites, the cluster runs shared platform services:
+Beyond the seven sites, the cluster runs shared platform services:
 
 - **Umami:** <a href="https://analytics.kevinryan.io" target="_blank" rel="noopener noreferrer">analytics.kevinryan.io</a> — Privacy-focused web analytics (PostgreSQL-backed)
 - **Grafana:** <a href="https://monitoring.kevinryan.io" target="_blank" rel="noopener noreferrer">monitoring.kevinryan.io</a> — Dashboards, with Loki for log aggregation, Promtail for log collection, and VictoriaMetrics for metrics
+- **Directus:** Headless CMS serving as a shared digital asset management layer (`k8s/directus/`, spec-0019)
 
 Both services retrieve credentials from Azure Key Vault via External Secrets Operator.
 

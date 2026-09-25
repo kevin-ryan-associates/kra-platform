@@ -1,9 +1,9 @@
 ---
 name: "plane-platform-development"
 description: "Interact with the kra-platform-development Plane project for kra-platform — find spec/feature work items, file new work, and close the loop when done. Use for any Plane lookup, work item creation, or work item status update in this repo."
-version: 1.1
+version: 1.2
 created: "2026-09-23"
-updated: "2026-09-23"
+updated: "2026-09-25"
 ---
 
 ## When to Use
@@ -35,6 +35,8 @@ These rules are standing instructions from the repository owner and apply to **a
   - In Review → `5143a65a-2628-42d9-8c07-b22582a3819a` (started — custom state created 2026-09-23 for this lifecycle)
   - Done → `468f6292-b286-4185-8c3a-de55424c1697` (completed)
   - Cancelled → `b482efe9-f972-4b2a-a5dc-691269027466` (cancelled)
+- Epic work item type: `211926f4-3894-475a-b394-d0d28e8149a5` (`plane_workitem_type` `resolve` "Epic", `is_epic: true`); project features `epics` + `workitem_types` enabled 2026-09-25 (`plane_project` `update_features`). Epic example: KRA-13 "Update documentation" with children KRA-2..KRA-12.
+- Cycle Sprint 1: `b09126cc-ecb5-4e33-b20b-af190157cfbd` (2026-09-23 → 2026-10-07) — `plane_cycle` `retrieve` gives authoritative dates.
 
 ## Procedure
 
@@ -65,6 +67,10 @@ These rules are standing instructions from the repository owner and apply to **a
 - In `mcpScript`, `tools.call` resolves to `{ok, data: {structuredContent: …}}` (sometimes with a further `.result` inside) — unwrap `.data.structuredContent` (and `.result` if present) before reading fields. A wrong unwrap makes *successful* writes look like failures (observed 2026-09-23: assignee updates landed but a broken unwrap reported `NOT ASSIGNED`). Always verify writes with a follow-up read of the actual field — for assignees, `assignees` contains the UUID and `min_assignee_first_name` shows the resolved name.
 - State-update responses can echo stale `state_group` (moving KRA-9 to Done returned `state_group: "started"` while `state` was the Done UUID and `completed_at` was set). Trust `state` + `completed_at`, or confirm with `retrieve_by_identifier` (`state_group` showed `completed` on the follow-up read).
 - `workitem update` silently ignores `sort_order`: the call returns ok, but `updated_at` stays unchanged and a follow-up read shows the old value (verified 2026-09-23 setting kanban order on KRA-2…KRA-9). Plane's public API does not persist manual kanban ordering via PATCH, and the server exposes no reorder tool. Within-column board order can only be set by dragging cards in the Plane UI, or indirectly by sorting the board by `priority` (which the API does control). Always verify `sort_order` writes with a follow-up `retrieve` — do not trust the ok response.
+- Epics: enable via `plane_project` `update_features` (`epics: true`, `workitem_types: true`) before the Epic type is usable; then `plane_workitem_type` `resolve` (find-or-create, never duplicates). Epics carry no `state_group` (null) — child progress rolls up instead; an epic can still be added to a cycle. Give the epic `start_date`/`target_date` matching the cycle's dates.
+- `plane_cycle` `manage_workitems` `add_ids`/`remove_ids` take a **comma-separated string, not a JSON array** (pydantic rejects lists) and return `null` — verify with `cycle` `list_workitems` afterwards.
+- Work item reads (`list`, `retrieve_by_identifier`, `update` responses) show `cycle_id: null` for **cycle members too** (observed 2026-09-25: every Sprint 1 item, incl. ones confirmed in the cycle, reads back `cycle_id: null`) — `cycle_id` on a work item read is not evidence of cycle membership either way. Verify membership only via `plane_cycle` `list_workitems`.
+- PQL cannot filter on `parent` (rejected: "Filtering on field 'parent' is not allowed") — use the relation function `childOf("KRA-13")` instead. `parent` also does not come back in `workitem list` sparse fieldsets — verify `parent` writes with `retrieve_by_identifier`, not with `list` + `fields`.
 - Don't batch deviations/learnings into one end-of-task comment — post them on the item as they are discovered.
 - Comments go through `workitem_comment` (`create`/`list` with `project_id` + `workitem_id`), not `workitem`. `workitem_comment list` reads them back when resuming an item.
 

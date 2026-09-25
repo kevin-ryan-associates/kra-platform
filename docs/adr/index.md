@@ -41,3 +41,4 @@ An ADR is a short document that captures a significant architectural decision. E
 | [021](./adr-021-auth0-authentication-hq) | Auth0 for HQ Authentication | Superseded |
 | [022](./adr-022-retire-sddbook-specmcp-sites) | Retire sddbook.com and specmcp.ai Sites | Accepted |
 | [023](./adr-023-librechat-theme-overlay) | LibreChat Theming via Overlay on Upstream Image | Accepted |
+| [024](./adr-024-retire-sdd-process-artifacts) | Retire the SDD Process and Artifacts | Accepted |

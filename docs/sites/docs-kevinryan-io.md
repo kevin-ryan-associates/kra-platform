@@ -3,7 +3,7 @@ title: "docs.kevinryan.io"
 description: Architecture and dependencies for the documentation site, built with Astro Starlight and Mermaid.
 ---
 
-The documentation site at <a href="https://docs.kevinryan.io" target="_blank" rel="noopener noreferrer">docs.kevinryan.io</a> hosts all platform documentation, Architecture Decision Records, SDD specifications, and provenance documents. It is built with Astro Starlight and served by nginx.
+The documentation site at <a href="https://docs.kevinryan.io" target="_blank" rel="noopener noreferrer">docs.kevinryan.io</a> hosts all platform documentation and Architecture Decision Records. It is built with Astro Starlight and served by nginx.
 
 ## Stack
 
@@ -21,7 +21,6 @@ The documentation site at <a href="https://docs.kevinryan.io" target="_blank" re
 graph TD
     subgraph sources["Content Sources"]
         docs["docs/<br/>(repo root)"]
-        sdd[".sdd/<br/>(specs + provenance)"]
     end
 
     subgraph site["Astro Starlight"]
@@ -36,42 +35,19 @@ graph TD
     end
 
     docs --> symlink
-    sdd -->|"symlinked via<br/>docs/specs, docs/provenance"| symlink
     symlink --> dist
     config --> dist
 ```
 
 ## Content Structure
 
-The docs site pulls content from multiple locations in the monorepo via symlinks:
+The docs site pulls its content from the repo root via a single symlink chain:
 
 ```text
-docs/                              # Repo root (canonical location)
-├── index.md                       # Platform overview (home page)
-├── ci-cd.md                       # GitHub Actions Workflows
-├── cloudflare.md                  # Cloudflare DNS & CDN
-├── docker-builds.md               # Docker Builds
-├── flux-cd.md                     # Flux CD Deployment
-├── k3s.md                         # K3s Architecture
-├── observability.md               # Observability
-├── terraform.md                   # Terraform Infrastructure
-├── traefik.md                     # Traefik Ingress
-├── umami.md                       # Umami Analytics
-├── sites/                         # Site Architectures
-│   └── <site>.md
-├── adr/                           # Architecture Decision Records
-│   └── adr-001 through adr-019
-├── specs → ../.sdd/specification  # SDD specifications (symlink)
-└── provenance → ../.sdd/provenance # Spec provenance (symlink)
+1. `sites/docs-kevinryan-io/src/content/docs/` → `../../../../docs/` (content lives at repo root)
 ```
 
-The key symlink chain:
-
-1. `sites/docs-kevinryan-io/src/content/docs/` → `../../../../docs/` (content lives at repo root)
-1. `docs/specs` → `../.sdd/specification` (SDD specs pulled in)
-1. `docs/provenance` → `../.sdd/provenance` (provenance docs pulled in)
-
-This means documentation is editable from the repo root (`docs/`) and automatically appears in the built site. SDD specifications and provenance are maintained in `.sdd/` and surfaced in the docs without duplication.
+This means documentation is editable from the repo root (`docs/`) and automatically appears in the built site.
 
 ## Configuration
 
@@ -91,7 +67,7 @@ This means documentation is editable from the repo root (`docs/`) and automatica
 The sidebar is manually configured with a mix of direct links and auto-generated sections:
 
 - Direct links for platform documentation pages
-- `autogenerate` for ADR, specs, and provenance directories (auto-discovers new `.md` files)
+- `autogenerate` for the ADR directory (auto-discovers new `.md` files)
 
 ### Content Config (`src/content.config.ts`)
 
@@ -117,10 +93,10 @@ A custom Astro component that replaces Starlight's default footer. It displays t
 
 ## Build and Serve
 
-The site uses a multi-stage Docker build with special handling for symlinks:
+The site uses a multi-stage Docker build with special handling for the content symlink:
 
 1. **Build stage** — Node.js 22 Alpine with pnpm:
-   - Copies `docs/` and `.sdd/` from the monorepo root
+   - Copies `docs/` from the monorepo root
    - Copies the site source
    - Replaces the `src/content/docs` symlink with real content via `cp -rL` (Docker `COPY` does not follow symlinks pointing outside the copied tree)
    - Runs `astro build` producing `dist/`

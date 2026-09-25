@@ -8,7 +8,7 @@ This is a monorepo hosting multiple sites for Kevin Ryan (AI-Native Engineering 
 
 - **kevinryan.io** — portfolio site. Next.js 16 (App Router, static export), React 19, Tailwind CSS 4. Marketing sections plus the AI Capabilities Assessment.
 - **brand.kevinryan.io** — static HTML brand guidelines site (no build step, no Node.js tooling).
-- **docs.kevinryan.io** — platform documentation site. Astro Starlight, serves the ADRs, specs, provenance records, and infrastructure guides.
+- **docs.kevinryan.io** — platform documentation site. Astro Starlight, serves the ADRs and infrastructure guides.
 - **hq.kevinryan.io** — LibreChat (upstream pre-built image + customization overlay). Deploys the upstream multi-container image (digest-pinned in `k8s/hq-kevinryan-io/deployment.yaml`, never `:latest`) plus an internal MongoDB, behind the existing `hq.kevinryan.io` IngressRoute. No build step, no Next.js source, no Dockerfile. Theming/branding (Tokyo Night Moon CSS, HQ title, favicons) is applied as an **overlay layer** — a `patch-index` initContainer that seds `index.html` (with fail-loud post-patch guards) and a `librechat-custom` ConfigMap mounted over `/app/client/dist/`.
   See the `librechat-hq-theme-patch` skill before touching any of it.
   Native email/password auth (Auth0 was dropped); Claude endpoint enabled via the bundled `ANTHROPIC_API_KEY`.
@@ -207,7 +207,7 @@ kevin-ryan-platform/
 │   │   ├── docker-compose.yml     # local-dev reference (api + mongodb only)
 │   │   └── README.md             # no build step, no Dockerfile, no source
 │   ├── docs-kevinryan-io/  # docs.kevinryan.io — Astro Starlight
-│   │   ├── src/            # Astro content (ADRs, specs, provenance)
+│   │   ├── src/            # Astro content (ADRs, site architecture guides)
 │   │   ├── public/         # Static assets
 │   │   ├── Dockerfile
 │   │   └── nginx.conf
@@ -268,7 +268,7 @@ Access is via the `plane` MCP server, configured in the committed `.mcp.json` (r
 
 **Instructions for all agents working in this repo:**
 
-1. Before starting any feature or spec-driven work, check the kra-platform-development project for a matching work item (via the `plane` MCP server — `plane_project` `list`, then `plane_workitem` `list` filtered by project). The work item is the source of truth for scope and acceptance criteria.
+1. Before starting any feature work, check the kra-platform-development project for a matching work item (via the `plane` MCP server — `plane_project` `list`, then `plane_workitem` `list` filtered by project). The work item is the source of truth for scope and acceptance criteria.
 2. If a task has a corresponding work item, reference its identifier in commit messages and branch names (e.g. `kra-42`).
 3. If you discover new work worth tracking (bugs, feature ideas, spec gaps), file it as a work item in the kra-platform-development project rather than only noting it in conversation.
 4. When work on an item starts, move it to **In Progress** and comment on it with the implementation plan (summary, approach, verification steps) before making any code changes.

@@ -162,7 +162,7 @@ Both services retrieve credentials from Azure Key Vault via External Secrets Ope
 This documentation site is itself part of the monorepo, built with <a href="https://starlight.astro.build/" target="_blank" rel="noopener noreferrer">Astro Starlight</a>. Rather than duplicating content, it uses symlinks to pull in documentation that lives alongside the code it describes:
 
 - `src/content/docs/` symlinks to `docs/` at the repository root — keeping documentation editable from either path
-- Architecture Decision Records, SDD specifications, and provenance documents are all symlinked from their canonical locations in the repo
+- Architecture Decision Records live in their canonical location in the repo and are surfaced via the same symlink
 
 This means the docs site is always in sync with the codebase and can be updated in the same commit as the code change it documents. The site is built with `astro build`, containerised, and deployed through the same GitOps pipeline as every other site.
 

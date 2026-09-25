@@ -109,7 +109,6 @@ RUN pnpm install --frozen-lockfile
 
 WORKDIR /app
 COPY docs/ ./docs/
-COPY .sdd/ ./.sdd/
 COPY sites/docs-kevinryan-io/ ./sites/docs-kevinryan-io/
 
 # Replace symlinks with real content
@@ -138,8 +137,8 @@ CMD ["nginx", "-g", "daemon off;"]
 
 Key details:
 
-- The `docs/` and `.sdd/` directories are copied from the monorepo root into the build context because Docker `COPY` does not follow symlinks that point outside the copied tree.
-- A `cp -rL` step resolves the symlinks inside the container, replacing them with real copies before the Astro build runs.
+- The `docs/` directory is copied from the monorepo root into the build context because Docker `COPY` does not follow symlinks that point outside the copied tree.
+- A `cp -rL` step resolves the `src/content/docs` symlink inside the container, replacing it with a real copy before the Astro build runs.
 - The build output (`dist/`) is the fully rendered static documentation site.
 
 ## Single-Stage Builds

@@ -18,7 +18,6 @@ RUN pnpm install --frozen-lockfile
 
 WORKDIR /app
 COPY docs/ ./docs/
-COPY .sdd/ ./.sdd/
 COPY sites/docs-kevinryan-io/ ./sites/docs-kevinryan-io/
 
 # Replace symlinks with real content (Docker COPY does not follow symlinks for external targets)

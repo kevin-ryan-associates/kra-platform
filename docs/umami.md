@@ -30,8 +30,6 @@ Every site in the platform includes the Umami tracking script. Each site has a u
 | Distributed Equity | distributedequity.org | `0b17c94d-4711-4454-9c5b-ea437abaaf87` |
 | The AI-Native Engineer | ai-native-engineer.io | `38d895e8-552c-4dc8-a3f0-a493d49d75e2` |
 
-> aiimmigrants.com and distributedequity.org have Umami websites registered but currently ship no tracking script — the IDs above are provisional until tracking is added (see the follow-up work item).
-
 ### Script Snippet
 
 The tracking script is identical across all sites — only the `data-website-id` changes:

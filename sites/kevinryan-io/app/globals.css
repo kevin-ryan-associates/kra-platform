@@ -229,6 +229,10 @@ blockquote cite {
 .shell { max-width: var(--shell); margin: 0 auto; padding-left: var(--pad); padding-right: var(--pad); }
 .section { padding: var(--sp-14) 0; border-top: var(--hair) solid var(--line); }
 .section--sink { background: var(--bg-sink); }
+/* A section that opens a page sits under the top bar's own rule, so
+   it drops its rule and takes a short top rather than the full
+   gap between sections. */
+.section--opens { border-top: 0; padding-top: var(--sp-6); }
 .sec-head { margin-bottom: var(--sp-10); }
 .sec-lead { max-width: 78ch; margin: var(--sp-3) 0 0; }
 
@@ -588,6 +592,7 @@ a.reach__v:hover { color: var(--sec); }
 }
 @media (max-width: 900px) {
   .section { padding: var(--sp-8) 0; }
+  .section--opens { padding-top: var(--sp-4); }
   .sec-head { margin-bottom: var(--sp-6); }
   .cells--2, .cells--3, .cells--4 { grid-template-columns: 1fr; }
   .split { grid-template-columns: 1fr; gap: var(--sp-5); align-items: start; }
@@ -801,12 +806,16 @@ a.reach__v:hover { color: var(--sec); }
 @media (max-width:  400px) { .venn__stage { transform: scale(0.39); } .venn { height: 273px; } }
 
 /* ═══ PROPOSITIONS HERO ══════════════════════════════════════
-   The wordmark sits top left and the diagram is centred in the
-   full shell width. Those two are the only things competing for
-   attention, so the gap between them is the largest step on the
-   scale rather than a section gap.
+   Since 3.2.0 the second section on the home page, under the
+   modernisation hero, so it takes the standard section padding and
+   rule and an ordinary section head. The diagram is centred in the
+   full shell width.
+
+   The mark-and-name lockup below, .phero__head and .phero__name, is
+   no longer rendered on the site. It stays in the system because the
+   theme sheet specifies it, B35, and it is the construction to reuse
+   wherever the full lockup appears again.
    ═══════════════════════════════════════════════════════════ */
-.phero { border-top: 0; padding: var(--sp-8) 0 var(--sp-10); }
 
 /* The head is the mark with the full name locked under it.
    inline-block shrink-wraps the head to its widest child, which is
@@ -851,7 +860,6 @@ a.reach__v:hover { color: var(--sec); }
 }
 
 @media (max-width: 900px) {
-  .phero { padding: var(--sp-6) 0 var(--sp-8); }
   .phero__venn { margin-top: var(--sp-3); }
   .phero__cells { margin-top: var(--sp-5); }
 }
@@ -944,6 +952,116 @@ a.reach__v:hover { color: var(--sec); }
   .capintro { margin-bottom: var(--sp-6); }
 }
 
+/* ═══ MODERNISATION HERO ═════════════════════════════════════
+   The home page opens on the entry offer. The section carries the
+   page's h1, B36, and the mark, because the top bar has none, B27.
+   The title is the display step, which appears once per page. B13.
+   ═══════════════════════════════════════════════════════════ */
+.mhero { border-top: 0; padding: var(--sp-8) 0 var(--sp-14); }
+
+.mhero__brand {
+  display: flex; align-items: baseline; flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3); margin-bottom: var(--sp-10);
+}
+.mhero__brand .wordmark { font-size: var(--text-h1); line-height: 1; }
+
+/* The display step without .t-display's 11ch measure, which would
+   break this title over five lines. The second clause takes --sec. */
+.mhero__title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: var(--fluid-display); line-height: 0.95;
+  letter-spacing: var(--track-display); color: var(--ink);
+  margin: 0 0 var(--sp-8); max-width: 15ch;
+}
+.mhero__title em { font-style: normal; color: var(--sec); }
+
+.mhero__grid {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--sp-8); align-items: start;
+}
+.mhero__lead { margin: 0; max-width: 56ch; }
+.mhero .actions { margin: var(--sp-5) 0 0; }
+
+/* The proof. Its top edge is a stat rule, which B19 allows. */
+.mproof {
+  margin-top: var(--sp-8); padding-top: var(--sp-2);
+  border-top: var(--border-emphasis) solid var(--sec);
+  display: grid; grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-1) var(--sp-3); align-items: baseline; max-width: 60ch;
+}
+.mproof__v {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: var(--text-h1); line-height: 1;
+  letter-spacing: var(--track-title); color: var(--sec);
+}
+.mproof__k { margin: 0; font-size: var(--text-ui); line-height: 1.6; color: var(--ink-2); }
+.mproof__src { grid-column: 2; }
+
+/* ═══ MODERNISATION PATH ═════════════════════════════════════
+   A meta panel holding an ordered list: four stages, then the three
+   conditions every stage runs under. Rows take the cell grid's
+   hover surface, without its accent edge, because nothing is
+   clickable.
+   ═══════════════════════════════════════════════════════════ */
+.mpath { border: var(--hair) solid var(--line); background: var(--bg-panel); }
+.mpath__hd, .mpath__ft {
+  font-family: var(--font-mono); font-size: var(--text-label);
+  letter-spacing: var(--track-mono-wide); text-transform: uppercase; color: var(--ink-3);
+}
+.mpath__hd {
+  display: flex; justify-content: space-between; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3); border-bottom: var(--hair) solid var(--line);
+}
+.mpath ol { list-style: none; margin: 0; padding: 0; }
+.mpath__step {
+  display: grid; grid-template-columns: var(--sp-5) minmax(0, 1fr);
+  padding: var(--sp-3); border-top: var(--hair) solid var(--line);
+  transition: background var(--dur-fast) var(--ease);
+}
+.mpath__step:first-child { border-top: 0; }
+.mpath__step:hover { background: var(--bg-raise); }
+.mpath__n {
+  font-family: var(--font-mono); font-size: var(--text-caption);
+  letter-spacing: var(--track-mono); color: var(--sec); padding-top: 4px;
+}
+.mpath__step h3 { margin: 0 0 4px; }
+.mpath__step p { margin: 0; font-size: var(--text-ui); line-height: 1.6; color: var(--ink-2); }
+.mpath__ft { display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--hair) solid var(--line); }
+.mpath__ft span { padding: var(--sp-2) var(--sp-3); border-right: var(--hair) solid var(--line); }
+.mpath__ft span:last-child { border-right: 0; }
+
+/* ═══ MODERNISATION ASSESSMENT ═══════════════════════════════
+   The entry offer: terms, four deliverables in the phase cell, and
+   a close that pairs one sentence with the primary action.
+   ═══════════════════════════════════════════════════════════ */
+.massess__terms { margin: 0 0 var(--sp-8); }
+.massess__close {
+  margin-top: var(--sp-8); padding-top: var(--sp-5);
+  border-top: var(--hair) solid var(--line);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-4); align-items: center;
+}
+.massess__close p {
+  margin: 0; max-width: 52ch; font-family: var(--font-display); font-weight: 500;
+  font-size: var(--text-h3); line-height: 1.35; letter-spacing: var(--track-tight); color: var(--ink);
+}
+
+@media (max-width: 1180px) {
+  .mhero__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-6); }
+}
+@media (max-width: 900px) {
+  .mhero { padding: var(--sp-6) 0 var(--sp-8); }
+  .mhero__brand { margin-bottom: var(--sp-6); }
+  .mhero__title { margin-bottom: var(--sp-5); }
+  .mhero__grid { grid-template-columns: 1fr; }
+  .mproof { margin-top: var(--sp-6); }
+  .mpath__ft { grid-template-columns: 1fr; }
+  .mpath__ft span { border-right: 0; border-top: var(--hair) solid var(--line); }
+  .mpath__ft span:first-child { border-top: 0; }
+  .massess__terms { margin-bottom: var(--sp-6); }
+  .massess__close { grid-template-columns: 1fr; align-items: start; }
+}
+
 /* Motion responds to input only. Nothing animates on entry. */
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
@@ -953,6 +1071,6 @@ a.reach__v:hover { color: var(--sec); }
   .section { padding: 16pt 0; }
   .prose { max-width: none; }
   h1, h2, h3 { break-after: avoid; }
-  .cell, .capitem { break-inside: avoid; }
+  .cell, .capitem, .mpath__step { break-inside: avoid; }
   .capgrid { grid-template-columns: 1fr; }
 }

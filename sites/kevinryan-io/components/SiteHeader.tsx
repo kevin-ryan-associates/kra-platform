@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation"
 import { MouseEvent } from "react"
 
 /**
- * Left-aligned three-button nav. No wordmark, no section-locus readout.
- * Home, Contact and Kevin are all internal routes; clicking either returns
+ * Left-aligned four-button nav: Home, Method, Contact, Kevin. No wordmark,
+ * no section-locus readout. All four are internal routes; clicking one returns
  * to the start of that page — when already on the target page a plain <Link>
  * to the same route is a no-op, so we intercept and smooth-scroll to top.
  */
@@ -27,14 +27,9 @@ export default function SiteHeader(): React.JSX.Element {
     <header className="topbar">
       <nav className="topbar__nav">
         <Link className="tool" href="/" onClick={(e) => goTop(e, '/')}>Home</Link>
+        <Link className="tool" href="/method" onClick={(e) => goTop(e, '/method')}>Method</Link>
         <Link className="tool" href="/contact" onClick={(e) => goTop(e, '/contact')}>Contact</Link>
-        <Link
-          className="tool"
-          href="/kevin"
-          onClick={(e) => goTop(e, '/kevin')}
-        >
-          Kevin
-        </Link>
+        <Link className="tool" href="/kevin" onClick={(e) => goTop(e, '/kevin')}>Kevin</Link>
       </nav>
     </header>
   )

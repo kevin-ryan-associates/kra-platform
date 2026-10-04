@@ -16,7 +16,7 @@ wordmark, the Venn and the set cards. Nothing here writes to the base.
 """
 import re, sys
 
-VERSION = "3.2.0"
+VERSION = "3.3.0"
 GLOBALS = "../app/globals.css"
 BASE    = "sheet-base.html"      # the 3.0.0 sheet. Read only, never written.
 CHROME  = "sheet-chrome.css"
@@ -169,7 +169,7 @@ CAPBLOCK = '''
 MODERN = '''
   <!-- ══ MODERNISATION HERO AND PATH ══ -->
   <section class="block" data-accent="teal">
-    <h2>Modernisation hero and path · B42, B43</h2>
+    <h2>Modernisation hero and step panel · B42, B43</h2>
     <div class="mhero__brand">
       <p class="wordmark">KR<i>&amp;</i>A</p>
       <span class="t-meta">Kevin Ryan &amp; Associates</span>
@@ -189,12 +189,12 @@ MODERN = '''
           <span class="t-meta mproof__src">Source line</span>
         </div>
       </div>
-      <div class="mpath">
-        <div class="mpath__hd"><span>Modernisation path</span><span>In your estate</span></div>
+      <div class="steps">
+        <div class="steps__hd"><span>Modernisation path</span><span>In your estate</span></div>
         <ol>
 %s
         </ol>
-        <div class="mpath__ft"><span>Open weights</span><span>Your infrastructure</span><span>Your release process</span></div>
+        <div class="steps__ft"><span>Open weights</span><span>Your infrastructure</span><span>Your release process</span></div>
       </div>
     </div>
     <p class="note">
@@ -217,13 +217,28 @@ MODERN = '''
     </div>
   </section>
 ''' % (
-  "\n".join('          <li class="mpath__step"><span class="mpath__n">%s</span><div><h3>%s</h3><p>%s</p></div></li>' % st
+  "\n".join('          <li class="steps__item"><span class="steps__n">%s</span><div><h3>%s</h3><p>%s</p></div></li>' % st
     for st in [("01", "Read", "Explained in business terms."), ("02", "Map", "Before a line is changed."),
                ("03", "Rebuild", "Highest cost and risk first."), ("04", "Verify", "Proven equivalent before release.")]),
   "\n".join('      <div class="cell cell--phase"><div class="cell__n">%s</div><h3 class="t-h3">%s</h3><p>Deliverable.</p><div class="cell__grow"></div><div class="cell__foot">%s</div></div>' % d
     for d in [("01", "Estate map", "For leadership"), ("02", "Risk register", "For risk and audit"),
               ("03", "Rebuild sequence", "For engineering"), ("04", "Sovereignty exposure", "For compliance")]),
 )
+
+CHAINBLOCK = '''
+  <!-- ══ DELIVERY CHAIN ══ -->
+  <section class="block" data-accent="magenta">
+    <h2>Delivery chain · B47</h2>
+    <ol class="chain">
+      <li>Work item</li><li>Branch</li><li>Merge</li><li>Pipeline</li><li>Deploy</li><li>Live</li>
+    </ol>
+    <p class="note">
+      The path every change takes, on the cell grid\u2019s hairlines. The last step takes --sec because
+      it is the only one a user sees. Tables beside it on /method stack into labelled rows under
+      900 rather than scrolling, .table--stack, B46.
+    </p>
+  </section>
+'''
 
 FORM = '''  <!-- ══ FORM ══ -->
   <section class="block" data-accent="blue">
@@ -280,7 +295,7 @@ FORM = '''  <!-- ══ FORM ══ -->
 # and the form block replaced wholesale
 anchor = body.index('  <!-- ══ FORM ══ -->')
 end    = body.index('  <!-- ══ CONSTRAINTS ══ -->')
-body   = body[:anchor] + MODERN + "\n" + VENN + "\n" + CAPBLOCK + "\n" + FORM + "\n" + body[end:]
+body   = body[:anchor] + MODERN + "\n" + CHAINBLOCK + "\n" + VENN + "\n" + CAPBLOCK + "\n" + FORM + "\n" + body[end:]
 
 m = re.search(r'(  <!-- ══ PROSE ══ -->|  <!-- ══ CONTROLS ══ -->)', body)
 insert_at = m.start() if m else body.index('  <!-- ══ FORM ══ -->')
@@ -295,6 +310,7 @@ body = body.replace('      <li>One primary button per view.</li>',
       <li>/kevin speaks as a person. Every other page speaks as the firm.</li>
       <li>A capability group is a list, not a card. No hover, nothing to click.</li>
       <li>The display step appears once per page.</li>
+      <li>A table never scrolls sideways on a phone. It stacks.</li>
       <li>A proof figure claims only what the referenced engagement delivered.</li>''')
 
 body = body.replace('same faces through @fontsource. No request leaves the origin to render type.',

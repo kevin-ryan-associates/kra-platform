@@ -1,5 +1,5 @@
 import Container from '@/components/Container'
-import ModernisationPath from '@/components/sections/ModernisationPath'
+import StepPanel from '@/components/StepPanel'
 
 /**
  * The home page hero. Legacy modernisation is the entry point to
@@ -12,6 +12,15 @@ import ModernisationPath from '@/components/sections/ModernisationPath'
  * The proof is the Mastercard engagement, anonymised as it is in
  * proposals. It claims only what that engagement delivered.
  */
+
+const PATH = [
+  { n: '01', t: 'Read', p: 'The codebase read end to end, and what it does explained in business terms.' },
+  { n: '02', t: 'Map', p: 'Dependencies, risks and dead code mapped before a line is changed.' },
+  { n: '03', t: 'Rebuild', p: 'Module by module, highest cost and risk first rather than oldest first.' },
+  { n: '04', t: 'Verify', p: 'New behaviour proven equivalent to old before anything reaches production.' },
+] as const
+
+const CONDITIONS = ['Open weights', 'Your infrastructure', 'Your release process'] as const
 export default function ModernisationHero() {
   return (
     <section className="section mhero" id="top" data-accent="teal">
@@ -47,7 +56,7 @@ export default function ModernisationHero() {
             </div>
           </div>
 
-          <ModernisationPath />
+          <StepPanel head={['Modernisation path', 'In your estate']} steps={PATH} foot={CONDITIONS} />
         </div>
       </Container>
     </section>

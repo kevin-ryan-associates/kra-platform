@@ -2,9 +2,9 @@
 id: 002-site-theme
 title: Kevin Ryan & Associates, site theme
 status: locked
-version: 3.2.0
+version: 3.3.0
 authority: this document
-supersedes: 3.1.1 · 3.1.0 · 3.0.0 · 2.0.0, the washed-lime-on-neutral palette
+supersedes: 3.2.0 · 3.1.1 · 3.1.0 · 3.0.0 · 2.0.0, the washed-lime-on-neutral palette
 artefacts:
   - app/globals.css                # canonical implementation
   - design-spec/theme-sheet.html   # rendered specimen, visual acceptance. Generated.
@@ -32,6 +32,21 @@ As of 3.1.0 the sheet is generated rather than authored. It inlines `app/globals
 The generator's input is `sheet-base.html`, which is the 3.0.0 sheet and is never written to. As shipped in 3.1.0 it read its own last output instead, which made a second run duplicate the wordmark, the Venn and the set cards. That is fixed in 3.1.1 and the run is now idempotent: the same stylesheet produces a byte-identical sheet however many times it is run.
 
 The palette is not owned here. It is lifted verbatim from `theme.tokyo_night_moon` in the `dotfiles` repository, which is the same source the terminal, editor, k9s, btop and lazygit configurations read. If that block changes, this theme changes with it. No colour is invented in this file.
+
+## Changed in 3.3.0
+
+A fourth route, `/method`, carries the Sovereign AI-Native Engineering capability paper laid out
+for the web. Nothing in B1 to B45 was renumbered; B27 and B43 are amended and B46 to B48 are
+added.
+
+- The top bar gains Method and is reordered: Home, Method, Kevin, Contact. B27.
+- The modernisation path becomes the general step panel, `.steps`, rendered by one
+  `StepPanel` component and used on `/` and `/method`. The classes were renamed from
+  `.mpath` and the foot now takes any number of cells. The numeral aligns to the step title by
+  baseline rather than by a 4px offset, which B21 did not allow. B43.
+- Tables can stack into labelled rows under 900 rather than scroll, `.table--stack`. B46.
+- The delivery chain, `.chain`, is added. B47.
+- The method page is specified, B48, and its sections join the accent map.
 
 ## Changed in 3.2.0
 
@@ -121,6 +136,14 @@ This is what makes a multi-accent palette disciplined rather than decorative. A 
 | Propositions hero, "Why us" | `blue` |
 | Our Capabilities | `cyan` |
 | Modernisation assessment | `green` |
+| Method: head | `blue` |
+| Method: the exposure | `red` |
+| Method: the test | `teal` |
+| Method: every choice | `cyan` |
+| Method: governed delivery | `magenta` |
+| Method: regulated environments | `orange` |
+| Method: status, engagement | `green`, `blue`, one per column |
+| Method: see it in action | `cyan1` |
 
 The three propositions carry fixed set colours rather than section accents, because they are a legend and must stay stable wherever they appear: AI-Native Engineering `teal`, Digital Sovereignty `yellow`, Ethical Technology `magenta`. That is the most even three-way hue split the ramp allows, 134, 132 and 94 degrees apart. Cyan was tried for the second and sat 24 degrees from teal, which read as one colour.
 
@@ -132,7 +155,7 @@ Resolves O2 from 3.0.0.
 
 - V1. `/kevin` is a person and speaks in the first person singular. Every other page is the firm and speaks in the first person plural.
 - V2. Where a named individual is the point on a plural page, name him in the third person rather than switching voice. The contact page does this: "You can also reach out to Kevin directly."
-- V3. Audited at the time of writing: the components that make up `/` and `/contact` contain no first person singular. `HeroSection` and `AboutSection` on `/kevin` retain theirs by design.
+- V3. Audited at the time of writing: the components that make up `/`, `/method` and `/contact` contain no first person singular. `HeroSection` and `AboutSection` on `/kevin` retain theirs by design.
 
 ### Typography
 
@@ -164,7 +187,7 @@ Resolves O2 from 3.0.0.
 - B24. Callouts are `.callout > .callout__label + p`. Colour lives on the left edge and the label. The body stays neutral. Callouts carry no icons.
 - B25. Tables have no vertical rules, no zebra striping and no outer border. Numeric columns use `.num` with tabular figures.
 - B26. One primary button per view.
-- B27. The top bar is a left-aligned row of routes with no wordmark and no locus readout. There is no scroll progress bar and no gauge anywhere in the system.
+- B27. The top bar is a left-aligned row of routes, in the order Home, Method, Kevin, Contact, with no wordmark and no locus readout. There is no scroll progress bar and no gauge anywhere in the system.
 - B37. The propositions Venn is HTML and CSS only. No SVG, no image, no script. It is a fixed
   900 by 700 coordinate space that scales as one unit rather than reflowing, built from a radius
   of 180 and a centre separation of 170, with every other offset derived. Three constructions in
@@ -188,22 +211,40 @@ Resolves O2 from 3.0.0.
   which drop to two at the same width.
 - B42. The modernisation hero, `.mhero`, opens `/`. Section accent `teal`, because
   modernisation is AI-Native Engineering work and teal is that set's colour. It holds, in
-  order: the mark at the `h1` step with the firm's name in `.t-meta` beside it, since the top
+  order: the mark at 80px, `sp-10`, with the firm's name in `.t-meta` at the `read` step beside it, since the top
   bar carries none, B27; a mono eyebrow; the title at the display step with a 15ch measure, its
   second clause in `--sec`; then a 7:5 grid of the lead, the actions and the proof against the
   modernisation path, B43. The proof, `.mproof`, is a figure in `--sec` over a stat top rule
   with its caption and source; it states only what the referenced engagement delivered, and
   the client is anonymised. The grid halves at 1180 and stacks at 900.
-- B43. The modernisation path, `.mpath`, is a meta panel holding an ordered list: a mono
-  head, four numbered stages, and a three-cell foot naming the conditions every stage runs
-  under. Rows take the `bg_highlight` hover surface and no accent edge, because nothing is
-  clickable. At 900 the foot stacks.
+- B43. The step panel, `.steps`, is a meta panel holding an ordered list: a mono head, numbered
+  steps, and an optional foot naming the conditions every step runs under, one cell each.
+  Numerals read `--sec` and align to the step title by baseline. Rows take the `bg_highlight`
+  hover surface and no accent edge, because nothing is clickable. At 900 the foot stacks. One
+  component, `StepPanel`, renders it: the modernisation path on `/` and the work-item
+  lifecycle on `/method`.
 - B44. The modernisation assessment, `.massess`, is the entry offer and the target of the
   hero's secondary action. Section accent `green`. A tight section head, a row of terms in the
   `.avail` style, four deliverables in `.cell--phase` cells, and a close pairing one sentence
   at the `h3` step with the primary action. No duration or price is stated on the page.
 - B45. A section that opens a page sits directly under the top bar's rule, so it carries no
-  rule of its own and takes `sp-6` above it, `sp-4` under 900. `.section--opens`. `/contact` is the case today.
+  rule of its own and takes `sp-6` above it, `sp-4` under 900. `.section--opens`. `/contact` and `/method` use it.
+- B46. A table with more than two columns, or with reading text in a cell, takes
+  `.table--stack`. Under 900 each row becomes a block and each cell sets its column name from
+  `data-label` as a mono micro label above the value, so the table never scrolls sideways. The
+  header row stays in the accessibility tree, visually hidden. A first column already set in
+  mono, `.vendor`, carries no label. `.col-meta` is a short mono reference value and
+  `.col-body` a reading column.
+- B47. The delivery chain, `.chain`, is an ordered row of mono uppercase cells on the cell
+  grid's hairlines naming the path every change takes. The last cell takes `--sec`, because it
+  is the only one a user sees. Six across, three under 900. No arrows, per N3.
+- B48. `/method` lays the capability paper out for the web. A head at the `h1` step with a 28ch
+  measure, the lead against an "On this page" list of index rows linking each section; then
+  the exposure in three cells, the test in two, the stack as a stacking table with a callout,
+  governed delivery as prose against a step panel above the chain, the regulated obligations
+  as a stacking table with its disclaimer, and status and engagement as two columns, each
+  setting its own accent, then the docs banner from `/kevin`, "See it in action", in `cyan1` with its section rule kept, `.docs-banner--ruled`. The paper's section numbers stay in the contents list only: section
+  heads carry no numeral, B14. The page's one primary action closes it.
 - B39. Native form chrome is suppressed. `color-scheme: dark` on `html`, without which the select popup, the caret, autofill and the scrollbars all render in the light system theme on a dark page. `appearance: none` on `.field`, `select.field` and `.btn`, without which Safari rounds corners and adds an inner shadow, breaking B17 and B18. Autofill is overridden with an inset shadow, which is the only mechanism Chrome honours. The select popup list itself is drawn by the OS and cannot be styled beyond `color-scheme`.
 
 ### Motion and accessibility
@@ -324,6 +365,10 @@ section from 1600 down to 320, and every text colour in it clears its floor on t
 surface, the lowest being the group numeral at 5.16:1 and the lowest body colour at 8.10:1. The
 sheet regenerates to the same bytes on a second run, which is the check that the generator is no
 longer reading its own output.
+
+The 3.3.0 changes were verified the same way: lint, typecheck and build pass and `/method`
+prerenders. `/method`, `/` and `/contact` render with exactly one `h1` and no horizontal
+overflow at 1440 and 390, and the top bar reads Home, Method, Kevin, Contact on each.
 
 The 3.2.0 changes were verified against a clean install of the workspace: `pnpm --filter
 kevinryan-io lint`, `tsc --noEmit` and `pnpm --filter kevinryan-io build` all pass, and the

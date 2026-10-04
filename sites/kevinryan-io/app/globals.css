@@ -236,6 +236,9 @@ blockquote cite {
 /* The docs banner: a compact section that opens the page, under the
    top bar's own rule. */
 .docs-banner { padding: var(--sp-8) 0; border-top: 0; }
+/* The same banner closing /method, after a section rather than the
+   keyword band, so it keeps the section rule. */
+.docs-banner--ruled { border-top: var(--hair) solid var(--line); }
 .sec-head { margin-bottom: var(--sp-10); }
 .sec-lead { max-width: 78ch; margin: var(--sp-3) 0 0; }
 
@@ -529,6 +532,33 @@ blockquote cite {
 .table .go { text-align: right; white-space: nowrap; font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-4); }
 .table tbody tr:hover .go { color: var(--sec); }
 .table .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; }
+/* A licence or other short reference value, and a reading column. */
+.table .col-meta {
+  font-family: var(--font-mono); font-size: var(--text-label);
+  letter-spacing: var(--track-mono); color: var(--ink-3);
+}
+.table .col-body { font-size: var(--text-ui); line-height: 1.6; color: var(--ink-2); }
+.table .th--obligation { width: 30%; }
+
+/* A table that stacks into labelled rows under 900 rather than
+   scrolling sideways. Each cell carries its column name in
+   data-label, set as a mono label above the value. B46. */
+@media (max-width: 900px) {
+  .table--stack thead {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .table--stack, .table--stack tbody, .table--stack tr, .table--stack td { display: block; width: 100%; }
+  .table--stack tr { padding: var(--sp-2) 0; border-bottom: var(--hair) solid var(--line); }
+  .table--stack tbody td { padding: var(--sp-1) 0 0; border-bottom: 0; white-space: normal; }
+  .table--stack td::before {
+    content: attr(data-label); display: block;
+    font-family: var(--font-mono); font-weight: 500; font-size: var(--text-micro);
+    letter-spacing: var(--track-mono-xwide); text-transform: uppercase; color: var(--ink-3);
+  }
+  .table--stack td.vendor::before { display: none; }
+}
+
 /* Certifications table: fixed vendor/verify column widths. */
 .table .th--vendor { width: 150px; }
 .table .th--go { width: 150px; text-align: right; }
@@ -986,7 +1016,11 @@ a.reach__v:hover { color: var(--sec); }
   display: flex; align-items: baseline; flex-wrap: wrap;
   gap: var(--sp-1) var(--sp-3); margin-bottom: var(--sp-10);
 }
-.mhero__brand .wordmark { font-size: var(--text-h1); line-height: 1; }
+/* The mark is sized as an asset, not on the type scale, like the
+   wordmark's own default. 80px is sp-10, so its height stays on the
+   8px grid; the name steps up from label to read to match. */
+.mhero__brand .wordmark { font-size: var(--sp-10); line-height: 1; }
+.mhero__brand .t-meta { font-size: var(--text-read); }
 
 /* The display step without .t-display's 11ch measure, which would
    break this title over five lines. The second clause takes --sec. */
@@ -1020,38 +1054,42 @@ a.reach__v:hover { color: var(--sec); }
 .mproof__k { margin: 0; font-size: var(--text-ui); line-height: 1.6; color: var(--ink-2); }
 .mproof__src { grid-column: 2; }
 
-/* ═══ MODERNISATION PATH ═════════════════════════════════════
-   A meta panel holding an ordered list: four stages, then the three
-   conditions every stage runs under. Rows take the cell grid's
-   hover surface, without its accent edge, because nothing is
-   clickable.
+/* ═══ STEP PANEL ════════════════════════════════════════════
+   A meta panel holding an ordered list: a head, numbered steps, and
+   an optional foot of conditions every step runs under. Used for the
+   modernisation path on / and the work-item lifecycle on /method.
+   Rows take the cell grid's hover surface, without its accent edge,
+   because nothing is clickable. B43.
    ═══════════════════════════════════════════════════════════ */
-.mpath { border: var(--hair) solid var(--line); background: var(--bg-panel); }
-.mpath__hd, .mpath__ft {
+.steps { border: var(--hair) solid var(--line); background: var(--bg-panel); }
+.steps__hd, .steps__ft {
   font-family: var(--font-mono); font-size: var(--text-label);
   letter-spacing: var(--track-mono-wide); text-transform: uppercase; color: var(--ink-3);
 }
-.mpath__hd {
+.steps__hd {
   display: flex; justify-content: space-between; gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3); border-bottom: var(--hair) solid var(--line);
 }
-.mpath ol { list-style: none; margin: 0; padding: 0; }
-.mpath__step {
-  display: grid; grid-template-columns: var(--sp-5) minmax(0, 1fr);
+.steps ol { list-style: none; margin: 0; padding: 0; }
+.steps__item {
+  display: grid; grid-template-columns: var(--sp-5) minmax(0, 1fr); align-items: baseline;
   padding: var(--sp-3); border-top: var(--hair) solid var(--line);
   transition: background var(--dur-fast) var(--ease);
 }
-.mpath__step:first-child { border-top: 0; }
-.mpath__step:hover { background: var(--bg-raise); }
-.mpath__n {
+.steps__item:first-child { border-top: 0; }
+.steps__item:hover { background: var(--bg-raise); }
+.steps__n {
   font-family: var(--font-mono); font-size: var(--text-caption);
-  letter-spacing: var(--track-mono); color: var(--sec); padding-top: 4px;
+  letter-spacing: var(--track-mono); color: var(--sec);
 }
-.mpath__step h3 { margin: 0 0 4px; }
-.mpath__step p { margin: 0; font-size: var(--text-ui); line-height: 1.6; color: var(--ink-2); }
-.mpath__ft { display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--hair) solid var(--line); }
-.mpath__ft span { padding: var(--sp-2) var(--sp-3); border-right: var(--hair) solid var(--line); }
-.mpath__ft span:last-child { border-right: 0; }
+.steps__item h3 { margin: 0; }
+.steps__item p { margin: 0; font-size: var(--text-ui); line-height: 1.6; color: var(--ink-2); }
+.steps__ft {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+  border-top: var(--hair) solid var(--line);
+}
+.steps__ft span { padding: var(--sp-2) var(--sp-3); border-right: var(--hair) solid var(--line); }
+.steps__ft span:last-child { border-right: 0; }
 
 /* ═══ MODERNISATION ASSESSMENT ═══════════════════════════════
    The entry offer: terms, four deliverables in the phase cell, and
@@ -1078,11 +1116,61 @@ a.reach__v:hover { color: var(--sec); }
   .mhero__title { margin-bottom: var(--sp-5); }
   .mhero__grid { grid-template-columns: 1fr; }
   .mproof { margin-top: var(--sp-6); }
-  .mpath__ft { grid-template-columns: 1fr; }
-  .mpath__ft span { border-right: 0; border-top: var(--hair) solid var(--line); }
-  .mpath__ft span:first-child { border-top: 0; }
+  .steps__ft { grid-auto-flow: row; }
+  .steps__ft span { border-right: 0; border-top: var(--hair) solid var(--line); }
+  .steps__ft span:first-child { border-top: 0; }
   .massess__terms { margin-bottom: var(--sp-6); }
   .massess__close { grid-template-columns: 1fr; align-items: start; }
+}
+
+/* ═══ METHOD PAGE ═══════════════════════════════════════════
+   /method, the capability paper laid out for the web. Its sections
+   are the system's: cells, tables, the step panel, a callout. Only
+   the head, the delivery chain and two closing devices are its own.
+   ═══════════════════════════════════════════════════════════ */
+
+/* The head. The h1 step at a wider measure than the default 20ch,
+   because this headline is a sentence, not a slogan. */
+.mhead__title { max-width: 28ch; margin-bottom: var(--sp-6); }
+.mhead__grid {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--sp-8); align-items: start;
+}
+.mhead__lead { margin: 0; max-width: 60ch; }
+.mhead__toc-label { margin-bottom: var(--sp-2); }
+
+/* The callout after the stack table. */
+.mstack__note { margin-top: var(--sp-6); }
+
+/* The delivery chain. Every change takes this path, and the last
+   step takes --sec because it is the only one a user sees. B47. */
+.chain {
+  list-style: none; margin: var(--sp-8) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-top: var(--hair) solid var(--line); border-left: var(--hair) solid var(--line);
+}
+.chain li {
+  padding: var(--sp-2); text-align: center;
+  border-right: var(--hair) solid var(--line); border-bottom: var(--hair) solid var(--line);
+  font-family: var(--font-mono); font-size: var(--text-label);
+  letter-spacing: var(--track-mono-wide); text-transform: uppercase; color: var(--ink-2);
+}
+.chain li:last-child { color: var(--sec); }
+
+/* The disclaimer under the obligations table. */
+.mreg__note { margin: var(--sp-3) 0 0; max-width: 78ch; font-size: var(--text-ui); line-height: 1.6; color: var(--ink-3); }
+
+/* Status and engagement. Two closing columns, each with its own
+   eyebrow accent. */
+.mclose p { margin: 0; max-width: 60ch; color: var(--ink-2); }
+.mclose .actions { margin: var(--sp-4) 0 0; }
+
+@media (max-width: 1180px) {
+  .mhead__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-6); }
+}
+@media (max-width: 900px) {
+  .mhead__grid { grid-template-columns: 1fr; }
+  .chain { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--sp-6); }
 }
 
 /* Motion responds to input only. Nothing animates on entry. */
@@ -1094,6 +1182,6 @@ a.reach__v:hover { color: var(--sec); }
   .section { padding: 16pt 0; }
   .prose { max-width: none; }
   h1, h2, h3 { break-after: avoid; }
-  .cell, .capitem, .mpath__step { break-inside: avoid; }
+  .cell, .capitem, .steps__item, .table tr { break-inside: avoid; }
   .capgrid { grid-template-columns: 1fr; }
 }

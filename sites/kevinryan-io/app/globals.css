@@ -593,7 +593,7 @@ select.field:invalid { color: var(--ink-4); }
 .fnote { text-transform: none; letter-spacing: 0; line-height: 1.5; }
 /* The error callout above the submit button, and the footnote below it. */
 .callout--error { margin-bottom: var(--sp-3); }
-.fnote--form { margin-top: var(--sp-3); }
+.fnote--form { margin-top: var(--sp-4); }
 .reach__row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: var(--hair) solid var(--line); }
 .reach__v { font-family: var(--font-mono); font-size: var(--text-ui); color: var(--ink-2); transition: color var(--dur-fast) var(--ease); }
 a.reach__v:hover { color: var(--sec); }

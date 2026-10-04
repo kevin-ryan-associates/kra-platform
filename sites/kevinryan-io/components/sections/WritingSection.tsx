@@ -31,7 +31,7 @@ export default function WritingSection() {
               <h3>{p.title}</h3>
               <p>{p.desc}</p>
               <span className="cell__grow" />
-              <div style={{ marginTop: 'var(--sp-3)' }}>
+              <div className="cell__pills">
                 <span className={`pill pill--${p.status}`}>{p.statusLabel}</span>
               </div>
               <span className="cell__out">{p.host} <span className="arr">↗</span></span>

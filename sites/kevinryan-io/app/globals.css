@@ -233,6 +233,9 @@ blockquote cite {
    it drops its rule and takes a short top rather than the full
    gap between sections. */
 .section--opens { border-top: 0; padding-top: var(--sp-6); }
+/* The docs banner: a compact section that opens the page, under the
+   top bar's own rule. */
+.docs-banner { padding: var(--sp-8) 0; border-top: 0; }
 .sec-head { margin-bottom: var(--sp-10); }
 .sec-lead { max-width: 78ch; margin: var(--sp-3) 0 0; }
 
@@ -241,6 +244,13 @@ blockquote cite {
 .cover__grid { display: grid; grid-template-columns: repeat(12, 1fr); min-height: calc(100vh - var(--topbar)); }
 .cover__main { grid-column: 1 / 8; padding: var(--sp-8) var(--sp-6) var(--sp-8) 0; border-right: var(--hair) solid var(--line); }
 .cover__side { grid-column: 8 / 13; padding: var(--sp-8) 0 var(--sp-8) var(--sp-6); }
+/* The cover's own measures, tighter than the defaults the base
+   classes carry. */
+.cover__lead { max-width: 52ch; margin-bottom: var(--sp-3); }
+.cover__prose { max-width: 54ch; }
+.cover__panel { margin-top: var(--sp-4); max-width: 520px; }
+.cover__portrait { margin: 0 0 var(--sp-5); }
+.cover__toc-label { margin-bottom: var(--sp-2); }
 .avail {
   display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
   font-family: var(--font-mono); font-size: var(--text-label);
@@ -443,6 +453,9 @@ blockquote cite {
   text-transform: uppercase; color: var(--ink-3); line-height: 1.5;
 }
 
+/* A pill row held above the cell foot by the flex grow. */
+.cell__pills { margin-top: var(--sp-3); }
+
 /* A figure and its caption inside a cell. */
 .cell__stat {
   display: block; font-family: var(--font-display); font-weight: 700; font-size: var(--text-h1);
@@ -458,6 +471,8 @@ blockquote cite {
 .split { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--sp-8); align-items: end; }
 .split--start { align-items: start; }
 .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--sp-8); }
+/* The About section's columns, a narrower floor than .two-col's 340px. */
+.about-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--sp-8); }
 
 /* ═══ STATUS PILLS. Exactly three. ═══════════════════════════ */
 .pill {
@@ -514,6 +529,11 @@ blockquote cite {
 .table .go { text-align: right; white-space: nowrap; font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: var(--track-mono); text-transform: uppercase; color: var(--ink-4); }
 .table tbody tr:hover .go { color: var(--sec); }
 .table .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; padding-right: 0; }
+/* Certifications table: fixed vendor/verify column widths. */
+.table .th--vendor { width: 150px; }
+.table .th--go { width: 150px; text-align: right; }
+/* The award callout follows the certifications table. */
+.certs-callout { margin-top: var(--sp-6); }
 
 /* ═══ FORM ═══════════════════════════════════════════════════ */
 .form-panel { border: var(--hair) solid var(--line); background: var(--bg-panel); }
@@ -571,6 +591,9 @@ select.field:invalid { color: var(--ink-4); }
 @media (max-width: 560px) { .frow { grid-template-columns: 1fr; } }
 .flabel { display: block; margin-bottom: 8px; }
 .fnote { text-transform: none; letter-spacing: 0; line-height: 1.5; }
+/* The error callout above the submit button, and the footnote below it. */
+.callout--error { margin-bottom: var(--sp-3); }
+.fnote--form { margin-top: var(--sp-4); }
 .reach__row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: var(--hair) solid var(--line); }
 .reach__v { font-family: var(--font-mono); font-size: var(--text-ui); color: var(--ink-2); transition: color var(--dur-fast) var(--ease); }
 a.reach__v:hover { color: var(--sec); }

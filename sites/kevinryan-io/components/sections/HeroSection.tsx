@@ -27,13 +27,13 @@ export default function HeroSection() {
           <div className="cover__main">
             <h1 className="t-display">Kevin <em>Ryan</em></h1>
 
-            <p className="t-lead" style={{ maxWidth: '52ch', marginBottom: 'var(--sp-3)' }}>
+            <p className="t-lead cover__lead">
               I used to direct teams of software engineers. Now I coordinate AI agents.
             </p>
 
             <hr className="rule--accent" />
 
-            <div className="prose" style={{ maxWidth: '54ch' }}>
+            <div className="prose cover__prose">
               <p>
                 A career building software and shipping products taught me the job was never
                 about the tools. It is specification, role clarity and amplifying human
@@ -50,7 +50,7 @@ export default function HeroSection() {
               </a>
             </div>
 
-            <div className="meta-panel" style={{ marginTop: 'var(--sp-4)', maxWidth: 520 }}>
+            <div className="meta-panel cover__panel">
               {META.map((r) => (
                 <div className="row" key={r.k}>
                   <span className="k">{r.k}</span>
@@ -93,7 +93,7 @@ export default function HeroSection() {
           </div>
 
           <aside className="cover__side">
-            <figure className="portrait" style={{ margin: '0 0 var(--sp-5)' }}>
+            <figure className="portrait cover__portrait">
               <div className="portrait__frame">
                 <Image src="/kevin.jpg" alt="Kevin Ryan" fill priority sizes="(max-width: 900px) 100vw, 420px" />
               </div>
@@ -103,7 +103,7 @@ export default function HeroSection() {
               </figcaption>
             </figure>
 
-            <p className="label" style={{ marginBottom: 'var(--sp-2)' }}>On this page</p>
+            <p className="label cover__toc-label">On this page</p>
             <nav>
               {INDEX.map((i) => (
                 <a className="index-row" href={i.href} key={i.n}>

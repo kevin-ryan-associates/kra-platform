@@ -14,13 +14,7 @@ export default function AboutSection() {
       <Container>
         <SectionHeader subtitle="About" title="When AI writes the code" />
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: 'var(--sp-8)',
-          }}
-        >
+        <div className="about-cols">
           <div className="prose">
             <p>
               The market has shifted. Anthropic hires generalists with quirky side projects

@@ -1,31 +1,21 @@
 import type { Metadata } from 'next'
+import ModernisationHero from '@/components/sections/ModernisationHero'
 import PropositionsHero from '@/components/sections/PropositionsHero'
 import OurCapabilities from '@/components/sections/OurCapabilities'
-import AssessmentHero from '@/components/sections/assessment/AssessmentHero'
-import AssessmentProblem from '@/components/sections/assessment/AssessmentProblem'
-import AssessmentCapabilities from '@/components/sections/assessment/AssessmentCapabilities'
-import AssessmentEngagement from '@/components/sections/assessment/AssessmentEngagement'
-import AssessmentDeliverables from '@/components/sections/assessment/AssessmentDeliverables'
-import AssessmentAudience from '@/components/sections/assessment/AssessmentAudience'
-import AssessmentEvidence from '@/components/sections/assessment/AssessmentEvidence'
+import ModernisationAssessment from '@/components/sections/ModernisationAssessment'
 
 export const metadata: Metadata = {
   description:
-    'A structured diagnostic that evaluates your organisation\'s capacity to realise measurable value from AI-assisted software development. Based on the DORA AI Capabilities Model.',
+    'Modernise the systems you cannot afford to break. AI-native legacy modernisation on open-weight models, on infrastructure you control, through your own release process.',
 }
 
 export default function Page() {
   return (
     <main>
+      <ModernisationHero />
       <PropositionsHero />
       <OurCapabilities />
-      <AssessmentHero />
-      <AssessmentProblem />
-      <AssessmentCapabilities />
-      <AssessmentEngagement />
-      <AssessmentDeliverables />
-      <AssessmentAudience />
-      <AssessmentEvidence />
+      <ModernisationAssessment />
     </main>
   )
 }

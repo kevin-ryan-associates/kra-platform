@@ -2,9 +2,9 @@
 id: 002-site-theme
 title: Kevin Ryan & Associates, site theme
 status: locked
-version: 3.1.1
+version: 3.2.0
 authority: this document
-supersedes: 3.1.0 · 3.0.0 · 2.0.0, the washed-lime-on-neutral palette
+supersedes: 3.1.1 · 3.1.0 · 3.0.0 · 2.0.0, the washed-lime-on-neutral palette
 artefacts:
   - app/globals.css                # canonical implementation
   - design-spec/theme-sheet.html   # rendered specimen, visual acceptance. Generated.
@@ -32,6 +32,30 @@ As of 3.1.0 the sheet is generated rather than authored. It inlines `app/globals
 The generator's input is `sheet-base.html`, which is the 3.0.0 sheet and is never written to. As shipped in 3.1.0 it read its own last output instead, which made a second run duplicate the wordmark, the Venn and the set cards. That is fixed in 3.1.1 and the run is now idempotent: the same stylesheet produces a byte-identical sheet however many times it is run.
 
 The palette is not owned here. It is lifted verbatim from `theme.tokyo_night_moon` in the `dotfiles` repository, which is the same source the terminal, editor, k9s, btop and lazygit configurations read. If that block changes, this theme changes with it. No colour is invented in this file.
+
+## Changed in 3.2.0
+
+The home page is repositioned around legacy modernisation, and the DORA-based readiness
+assessment is removed. Nothing in B1 to B41 was renumbered; B13, B22 and B36 are amended and
+B42 to B45 are added.
+
+- A modernisation hero now opens the home page, B42, with the modernisation path inside it,
+  B43. It carries the page's `h1` and the mark, which move out of the propositions hero. B36
+  is amended to match.
+- The display step now appears once per page rather than once per site, B13: the `/kevin`
+  cover and the home page hero.
+- The propositions hero becomes the second section. It takes the standard section rule and
+  padding, an ordinary section head, and the sunken surface, and its set cards drop from `h2`
+  to `h3` under the new head. The mark-and-name lockup, B35, is no longer rendered on the site
+  but stays specified.
+- The seven assessment sections are deleted, and with them the five assessment rows in the
+  accent map. A modernisation assessment, B44, replaces them, in `green`.
+- In Our Capabilities, Legacy Modernisation replaces the AI-Native Readiness Assessment, so
+  each group still holds four. The section moves from the sunken surface to `bg` to keep the
+  alternation, B22.
+- O3 is struck: the five upper-case headings it recorded were on the deleted sections.
+- The contact form subject no longer names the readiness assessment.
+- A section that opens a page, `.section--opens`, drops its top rule and takes `sp-6` above it (`sp-4` under 900). `/contact` uses it, so its head sits 48px under the top bar rather than under the full 112px section gap. B45.
 
 ## Changed in 3.1.1
 
@@ -93,13 +117,10 @@ This is what makes a multi-accent palette disciplined rather than decorative. A 
 | Career arc | `magenta` |
 | Published work | `yellow` |
 | Certifications | `green` |
-| Assessment: the problem | `red` |
-| Assessment: engagement | `cyan` |
-| Assessment: deliverables | `green` |
-| Assessment: audience | `magenta` |
-| Assessment: evidence | `yellow` |
-| Propositions hero | `blue` |
+| Modernisation hero | `teal` |
+| Propositions hero, "Why us" | `blue` |
 | Our Capabilities | `cyan` |
+| Modernisation assessment | `green` |
 
 The three propositions carry fixed set colours rather than section accents, because they are a legend and must stay stable wherever they appear: AI-Native Engineering `teal`, Digital Sovereignty `yellow`, Ethical Technology `magenta`. That is the most even three-way hue split the ramp allows, 134, 132 and 94 degrees apart. Cyan was tried for the second and sat 24 degrees from teal, which read as one colour.
 
@@ -111,7 +132,7 @@ Resolves O2 from 3.0.0.
 
 - V1. `/kevin` is a person and speaks in the first person singular. Every other page is the firm and speaks in the first person plural.
 - V2. Where a named individual is the point on a plural page, name him in the third person rather than switching voice. The contact page does this: "You can also reach out to Kevin directly."
-- V3. Audited at the time of writing: the nine components that make up `/` and `/contact` contain no first person singular. `HeroSection` and `AboutSection` on `/kevin` retain theirs by design.
+- V3. Audited at the time of writing: the components that make up `/` and `/contact` contain no first person singular. `HeroSection` and `AboutSection` on `/kevin` retain theirs by design.
 
 ### Typography
 
@@ -120,7 +141,7 @@ Resolves O2 from 3.0.0.
 - B10. Eleven fixed type steps exist. Generated output uses those steps and no intermediate values.
 - B11. Two steps are fluid and clamped: `display` and `h1`. All others are fixed.
 - B12. Uppercase is set in the mono face only. Display and body faces are never uppercased by CSS.
-- B13. The heading map is `.t-display`, `h1`/`.t-h1`, `h2`/`.t-h2`, `h3`/`.t-h3`, `.label`. No intermediate levels. `.t-display` appears once per site, on the cover.
+- B13. The heading map is `.t-display`, `h1`/`.t-h1`, `h2`/`.t-h2`, `h3`/`.t-h3`, `.label`. No intermediate levels. `.t-display`, or the display step, appears once per page: the `/kevin` cover and the home page hero, B42.
 - B14. Section heads carry a mono eyebrow above the title. No numeral, no section marker glyph.
 - B15. `.label` is a utility label outside the reading hierarchy. It never introduces reading content.
 - B16. Reading measure is set by `.prose` from `--measure`. No other element sets a measure.
@@ -134,8 +155,8 @@ Resolves O2 from 3.0.0.
 - B19. Structural lines are 1px `--line`. Emphasis edges are 2px and appear only on blockquotes, callout left edges, cell hover edges and stat top rules.
 - B20. Dashed borders appear on the empty state and nowhere else.
 - B21. All spacing derives from the 8px scale. Arbitrary pixel values are a defect.
-- B22. Sections alternate between `bg` and `page_bg` to give rhythm.
-- B36. One `h1` per page and no skipped levels. `SectionHeader` renders `h2` and takes `as="h1"` only where a section head is the page's own heading, which is `/contact` and nowhere else. `/` takes its `h1` from the wordmark in the propositions hero, `/kevin` from its cover.
+- B22. Sections alternate between `bg` and `page_bg` to give rhythm. On `/` that runs hero `bg`, propositions `page_bg`, capabilities `bg`, assessment `page_bg`.
+- B36. One `h1` per page and no skipped levels. `SectionHeader` renders `h2` and takes `as="h1"` only where a section head is the page's own heading, which is `/contact` and nowhere else. `/` takes its `h1` from the modernisation hero title, B42, `/kevin` from its cover. The mark in that hero is a `p`, as it is at the centre of the Venn.
 
 ### Components
 
@@ -165,6 +186,24 @@ Resolves O2 from 3.0.0.
   than leaving an orphan at two; this is the one place the B31 rule is departed from, and it is
   departed from so that the grid does not disagree with the three set cards directly above it,
   which drop to two at the same width.
+- B42. The modernisation hero, `.mhero`, opens `/`. Section accent `teal`, because
+  modernisation is AI-Native Engineering work and teal is that set's colour. It holds, in
+  order: the mark at the `h1` step with the firm's name in `.t-meta` beside it, since the top
+  bar carries none, B27; a mono eyebrow; the title at the display step with a 15ch measure, its
+  second clause in `--sec`; then a 7:5 grid of the lead, the actions and the proof against the
+  modernisation path, B43. The proof, `.mproof`, is a figure in `--sec` over a stat top rule
+  with its caption and source; it states only what the referenced engagement delivered, and
+  the client is anonymised. The grid halves at 1180 and stacks at 900.
+- B43. The modernisation path, `.mpath`, is a meta panel holding an ordered list: a mono
+  head, four numbered stages, and a three-cell foot naming the conditions every stage runs
+  under. Rows take the `bg_highlight` hover surface and no accent edge, because nothing is
+  clickable. At 900 the foot stacks.
+- B44. The modernisation assessment, `.massess`, is the entry offer and the target of the
+  hero's secondary action. Section accent `green`. A tight section head, a row of terms in the
+  `.avail` style, four deliverables in `.cell--phase` cells, and a close pairing one sentence
+  at the `h3` step with the primary action. No duration or price is stated on the page.
+- B45. A section that opens a page sits directly under the top bar's rule, so it carries no
+  rule of its own and takes `sp-6` above it, `sp-4` under 900. `.section--opens`. `/contact` is the case today.
 - B39. Native form chrome is suppressed. `color-scheme: dark` on `html`, without which the select popup, the caret, autofill and the scrollbars all render in the light system theme on a dark page. `appearance: none` on `.field`, `select.field` and `.btn`, without which Safari rounds corners and adds an inner shadow, breaking B17 and B18. Autofill is overridden with an inset shadow, which is the only mechanism Chrome honours. The select popup list itself is drawn by the OS and cannot be styled beyond `color-scheme`.
 
 ### Motion and accessibility
@@ -253,8 +292,12 @@ The print accent set is not defined here. It belongs to the brand book, which de
 ## Open
 
 - O1. The site is internally consistent at six GitLab badges and fourteen credentials in total, and the hero states the same. The practice brief says nine GitLab. Reconcile the brief or the badges.
-- O3. Five headings remain authored in upper case as literal strings, the `SectionHeader` titles on the assessment page. This conflicts with B12 in spirit, since the display face is being uppercased by hand rather than by CSS. Lowering them is a content change. `AI-NATIVE READINESS ASSESSMENT` was the sixth and was lowered in 3.1.1 because the copy revision rewrote that head anyway; the other five were not touched.
 - O7. This directory sits at the site root rather than the monorepo root. If the theme is to be shared across the other seven sites, move it up and import from there.
+- O9. The contact section title, `LET&rsquo;S ARRANGE A CONVERSATION.`, is authored in upper case as a literal string, which conflicts with B12 in spirit. Lowering it is a content change on `/contact` and was out of scope for 3.2.0.
+
+### Struck in 3.2.0
+
+- O3. Resolved by deletion. The five upper-case headings were on the assessment sections removed in 3.2.0. The one literal upper-case title left on the site is carried forward as O9.
 
 ### Struck in 3.1.0
 
@@ -282,7 +325,13 @@ surface, the lowest being the group numeral at 5.16:1 and the lowest body colour
 sheet regenerates to the same bytes on a second run, which is the check that the generator is no
 longer reading its own output.
 
-`pnpm build` has not been run against these changes, because `node_modules/.bin` resolves through the pnpm store and was not reachable from the environment they were authored in. The changed components were typechecked in an isolated project instead, which passed. Run the build before deploying.
+The 3.2.0 changes were verified against a clean install of the workspace: `pnpm --filter
+kevinryan-io lint`, `tsc --noEmit` and `pnpm --filter kevinryan-io build` all pass, and the
+static export prerenders `/`, `/contact` and `/kevin`. The exported pages were rendered at 1440
+and 390: no horizontal overflow on `/` or `/contact`, and exactly one `h1` on each. The sheet
+regenerates to the same bytes on a second run.
+
+`pnpm build` has not been run against the 3.1.x changes, because `node_modules/.bin` resolves through the pnpm store and was not reachable from the environment they were authored in. The changed components were typechecked in an isolated project instead, which passed. Run the build before deploying.
 
 ## Install note
 

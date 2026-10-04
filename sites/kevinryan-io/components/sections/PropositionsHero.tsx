@@ -1,4 +1,5 @@
 import Container from '@/components/Container'
+import SectionHeader from '@/components/SectionHeader'
 
 /**
  * The three propositions, as a Venn diagram.
@@ -8,6 +9,11 @@ import Container from '@/components/Container'
  * readers. The geometry lives in globals.css under PROPOSITIONS
  * VENN; every offset there is a stage pixel derived from a radius
  * of 180 and a centre separation of 170.
+ *
+ * Since 3.2.0 this is the second section, not the first. It answers
+ * the modernisation hero's question of why us, so it takes an
+ * ordinary section head, and the page's h1 and mark move up into
+ * the hero. B36.
  */
 
 const SETS = [
@@ -54,25 +60,16 @@ const PROPOSITIONS = [
   },
 ] as const
 
-/* Set one glyph per element so the name can be tracked out to the
-   exact width of the mark above it. aria-label carries the readable
-   string, since the glyphs on their own are not one. */
-const NAME = 'Kevin Ryan & Associates'
-
 export default function PropositionsHero() {
   return (
-    <section className="section phero" id="top" data-accent="blue">
+    <section className="section section--sink phero" id="why" data-accent="blue">
       <Container>
-        <div className="phero__head">
-          <h1 className="wordmark">KR<i>&amp;</i>A</h1>
-          <p className="phero__name" aria-label={NAME}>
-            {NAME.split('').map((ch, i) =>
-              ch === ' '
-                ? <span className="sp" key={`${i}-sp`} aria-hidden="true" />
-                : <span key={`${i}-${ch}`} aria-hidden="true">{ch}</span>,
-            )}
-          </p>
-        </div>
+        <SectionHeader
+          className="sec-head--tight"
+          subtitle="Why us"
+          title="Every vendor now sells AI modernisation. Most need your codebase on their models to do it."
+          lead="We do not. Modernisation is where our three disciplines meet: a method that rebuilds, an architecture that keeps the work in your jurisdiction, and a record that proves it was done properly."
+        />
 
         <div className="phero__venn venn">
           <div className="venn__stage">
@@ -111,7 +108,7 @@ export default function PropositionsHero() {
           {PROPOSITIONS.map((p) => (
             <div className="cell" key={p.n} data-accent={p.accent}>
               <div className="cell__n">{p.n}</div>
-              <h2 className="t-h3">{p.title}</h2>
+              <h3 className="t-h3">{p.title}</h3>
               <p>{p.body}</p>
               <div className="cell__grow" />
               <div className="cell__foot">{p.foot}</div>

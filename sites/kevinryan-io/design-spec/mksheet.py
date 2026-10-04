@@ -16,7 +16,7 @@ wordmark, the Venn and the set cards. Nothing here writes to the base.
 """
 import re, sys
 
-VERSION = "3.1.1"
+VERSION = "3.2.0"
 GLOBALS = "../app/globals.css"
 BASE    = "sheet-base.html"      # the 3.0.0 sheet. Read only, never written.
 CHROME  = "sheet-chrome.css"
@@ -123,7 +123,7 @@ VENN = '''
 
 CAPGROUPS = [
   ("01", "teal",    "AI-Native Engineering", [
-    ("AI-Native Readiness Assessment", "Where your engineering organisation actually stands."),
+    ("Legacy Modernisation",           "Read, map and rebuild, proving each module before release."),
     ("Human in the Loop by Design",    "Where a person has to decide, review and sign."),
     ("Knowledge That Outlives the Code", "Behaviour specifications and interface contracts."),
     ("Engineering Enablement",         "Practitioner training and co-delivery."),
@@ -165,6 +165,65 @@ CAPBLOCK = '''
     '        <div class="capitem"><span class="capitem__t">%s</span><p>%s</p></div>' % it
     for it in items) + "\n      </div>"
   for n, a, t, items in CAPGROUPS)
+
+MODERN = '''
+  <!-- ══ MODERNISATION HERO AND PATH ══ -->
+  <section class="block" data-accent="teal">
+    <h2>Modernisation hero and path · B42, B43</h2>
+    <div class="mhero__brand">
+      <p class="wordmark">KR<i>&amp;</i>A</p>
+      <span class="t-meta">Kevin Ryan &amp; Associates</span>
+    </div>
+    <span class="sec-mark">Legacy modernisation</span>
+    <p class="mhero__title">Modernise the systems you <em>cannot afford to break.</em></p>
+    <div class="mhero__grid">
+      <div>
+        <p class="t-lead mhero__lead">The lead, the actions and the proof sit against the path.</p>
+        <div class="actions">
+          <button class="btn btn--primary" type="button">Book a Discovery Call</button>
+          <button class="btn" type="button">Where it starts</button>
+        </div>
+        <div class="mproof">
+          <span class="mproof__v">90%%</span>
+          <p class="mproof__k">A figure in --sec over a stat top rule, with its caption.</p>
+          <span class="t-meta mproof__src">Source line</span>
+        </div>
+      </div>
+      <div class="mpath">
+        <div class="mpath__hd"><span>Modernisation path</span><span>In your estate</span></div>
+        <ol>
+%s
+        </ol>
+        <div class="mpath__ft"><span>Open weights</span><span>Your infrastructure</span><span>Your release process</span></div>
+      </div>
+    </div>
+    <p class="note">
+      The home page opens on the entry offer. The title is the display step, once per page, with a
+      15ch measure rather than .t-display's 11ch. The path is a meta panel holding an ordered list;
+      its rows take the hover surface and no accent edge, because nothing is clickable.
+    </p>
+  </section>
+
+  <!-- ══ MODERNISATION ASSESSMENT ══ -->
+  <section class="block massess" data-accent="green">
+    <h2>Modernisation assessment · B44</h2>
+    <p class="avail massess__terms"><span>Fixed scope</span><span class="avail__sep">/</span><span>Runs on your infrastructure</span><span class="avail__sep">/</span><span>The findings are yours</span></p>
+    <div class="cells cells--4">
+%s
+    </div>
+    <div class="massess__close">
+      <p>One sentence at the h3 step, paired with the primary action.</p>
+      <button class="btn btn--primary" type="button">Book a Discovery Call</button>
+    </div>
+  </section>
+''' % (
+  "\n".join('          <li class="mpath__step"><span class="mpath__n">%s</span><div><h3>%s</h3><p>%s</p></div></li>' % st
+    for st in [("01", "Read", "Explained in business terms."), ("02", "Map", "Before a line is changed."),
+               ("03", "Rebuild", "Highest cost and risk first."), ("04", "Verify", "Proven equivalent before release.")]),
+  "\n".join('      <div class="cell cell--phase"><div class="cell__n">%s</div><h3 class="t-h3">%s</h3><p>Deliverable.</p><div class="cell__grow"></div><div class="cell__foot">%s</div></div>' % d
+    for d in [("01", "Estate map", "For leadership"), ("02", "Risk register", "For risk and audit"),
+              ("03", "Rebuild sequence", "For engineering"), ("04", "Sovereignty exposure", "For compliance")]),
+)
 
 FORM = '''  <!-- ══ FORM ══ -->
   <section class="block" data-accent="blue">
@@ -221,7 +280,7 @@ FORM = '''  <!-- ══ FORM ══ -->
 # and the form block replaced wholesale
 anchor = body.index('  <!-- ══ FORM ══ -->')
 end    = body.index('  <!-- ══ CONSTRAINTS ══ -->')
-body   = body[:anchor] + VENN + "\n" + CAPBLOCK + "\n" + FORM + "\n" + body[end:]
+body   = body[:anchor] + MODERN + "\n" + VENN + "\n" + CAPBLOCK + "\n" + FORM + "\n" + body[end:]
 
 m = re.search(r'(  <!-- ══ PROSE ══ -->|  <!-- ══ CONTROLS ══ -->)', body)
 insert_at = m.start() if m else body.index('  <!-- ══ FORM ══ -->')
@@ -234,7 +293,9 @@ body = body.replace('      <li>One primary button per view.</li>',
       <li>One h1 per page. Section heads are h2.</li>
       <li>Native form chrome is suppressed. color-scheme is dark.</li>
       <li>/kevin speaks as a person. Every other page speaks as the firm.</li>
-      <li>A capability group is a list, not a card. No hover, nothing to click.</li>''')
+      <li>A capability group is a list, not a card. No hover, nothing to click.</li>
+      <li>The display step appears once per page.</li>
+      <li>A proof figure claims only what the referenced engagement delivered.</li>''')
 
 body = body.replace('same faces through @fontsource. No request leaves the origin to render type.',
 '''same faces through @fontsource. No request leaves the origin to render type.<br>

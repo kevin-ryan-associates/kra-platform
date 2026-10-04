@@ -22,8 +22,8 @@ const GROUPS = [
     title: 'AI-Native Engineering',
     items: [
       {
-        t: 'AI-Native Readiness Assessment',
-        p: 'Where your engineering organisation actually stands. Where decisions are made, what gets written down, which reviews are real, and how much AI-assisted work survives to production.',
+        t: 'Legacy Modernisation',
+        p: 'Systems the business depends on and nobody can safely change. We read them, map what the business relies on, and rebuild them module by module, proving each one behaves as the old one did before it reaches production.',
       },
       {
         t: 'Human in the Loop by Design',
@@ -95,7 +95,7 @@ const GROUPS = [
 
 export default function OurCapabilities() {
   return (
-    <section className="section section--sink" id="what-we-do" data-accent="cyan">
+    <section className="section" id="what-we-do" data-accent="cyan">
       <Container>
         <SectionHeader className="sec-head--tight" subtitle="What we do" title="Our Capabilities" />
 

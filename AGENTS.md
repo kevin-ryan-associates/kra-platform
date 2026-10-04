@@ -6,7 +6,7 @@ This is a monorepo hosting multiple sites for Kevin Ryan (AI-Native Engineering 
 
 ### Sites
 
-- **kevinryan.io** — portfolio site. Next.js 16 (App Router, static export), React 19, Tailwind CSS 4. Marketing sections plus the AI Capabilities Assessment. Tailwind 4 runs via `@tailwindcss/postcss` with `@theme` tokens in `app/globals.css` (zero inline styles); the Tokyo Night Moon palette in that file is the reference palette for theming other surfaces — authority: `design-spec/theme-spec.md` (sourced verbatim from the dotfiles `theme.tokyo_night_moon`).
+- **kevinryan.io** — portfolio site. Next.js 16 (App Router, static export), React 19, Tailwind CSS 4. Marketing sections led by legacy modernisation, plus the contact page. Tailwind 4 runs via `@tailwindcss/postcss` with `@theme` tokens in `app/globals.css` (zero inline styles); the Tokyo Night Moon palette in that file is the reference palette for theming other surfaces — authority: `design-spec/theme-spec.md` (sourced verbatim from the dotfiles `theme.tokyo_night_moon`).
 - **brand.kevinryan.io** — static HTML brand guidelines site (no build step, no Node.js tooling).
 - **docs.kevinryan.io** — platform documentation site. Astro Starlight, serves the ADRs and infrastructure guides.
 - **hq.kevinryan.io** — LibreChat (upstream pre-built image + customization overlay). Deploys the upstream multi-container image (digest-pinned in `k8s/hq-kevinryan-io/deployment.yaml`, never `:latest`) plus an internal MongoDB, behind the existing `hq.kevinryan.io` IngressRoute. No build step, no Next.js source, no Dockerfile. Theming/branding (Tokyo Night Moon CSS, HQ title, favicons) is applied as an **overlay layer** — a `patch-index` initContainer that seds `index.html` (with fail-loud post-patch guards) and a `librechat-custom` ConfigMap mounted over `/app/client/dist/`.
@@ -317,7 +317,7 @@ Edit skill files in `.pi/skills/` directly with the file tools — `skill_manage
 - ADR files (`docs/adr/adr-*.md`) are immutable decision-time records — never edit stale facts inside an ADR; fix stale claims only in living docs (AGENTS.md, README.md, `docs/`). Amendments go through the ADR process (dated amendment note or superseding ADR).
 - There is no root-level `pnpm lint` script — lint per site: `pnpm --filter <site> lint`.
 - The openspec CLI is explicitly rejected for this repo — do not add it to toolchain docs, workflows, or agent tool lists.
-- After the SDD retirement (ADR-024, KRA-16), do not reintroduce SDD references in living docs — the only permitted mentions are ADR-024 itself and the kevinryan.io assessment components, which describe the DORA AI Capabilities Model methodology, not the retired internal process.
+- After the SDD retirement (ADR-024, KRA-16), do not reintroduce SDD references in living docs — the only permitted mention is ADR-024 itself. (The kevinryan.io DORA assessment components, the former exception, were deleted in site theme 3.2.0.)
 - In Markdown code blocks, never put `#` comments on the same line as a command. Place comments on their own line above the command.
 - Rationale: yanking a line in AstroVim should grab only the command, not the trailing comment.
 

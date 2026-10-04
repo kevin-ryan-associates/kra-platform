@@ -3,8 +3,14 @@ import SectionHeader from '@/components/SectionHeader'
 import AssessmentContactForm from '@/components/sections/assessment/AssessmentContactForm'
 
 export default function AssessmentCta({ as = 'h2' }: { as?: 'h1' | 'h2' }) {
+  /* Carrying the page's h1 means this section opens the page, so it
+     takes the page-opening top rather than a between-sections gap. */
+  const opensPage = as === 'h1'
   return (
-    <section className="section section--sink" data-accent="blue">
+    <section
+      className={`section section--sink${opensPage ? ' section--opens' : ''}`}
+      data-accent="blue"
+    >
       <Container>
         <SectionHeader as={as} subtitle="Interested?" title="LET&rsquo;S ARRANGE A CONVERSATION." />
 

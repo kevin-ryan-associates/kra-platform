@@ -44,7 +44,7 @@ export default function AssessmentContactForm(): React.JSX.Element {
       <div className="form-panel__hd"><span className="label">Book a Discovery Call</span></div>
       <div className="form-panel__bd">
         <form onSubmit={handleSubmit}>
-          <input type="hidden" name="_subject" value="AI-Native Readiness Assessment Enquiry" />
+          <input type="hidden" name="_subject" value="Discovery Call Enquiry" />
 
           {status === 'error' && (
             <div className="callout" data-accent="red" style={{ marginBottom: 'var(--sp-3)' }}>

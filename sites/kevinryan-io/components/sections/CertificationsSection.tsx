@@ -38,9 +38,9 @@ export default function CertificationsSection() {
         <table className="table">
           <thead>
             <tr>
-              <th style={{ width: 150 }}>Vendor</th>
+              <th className="th--vendor">Vendor</th>
               <th>Credential</th>
-              <th style={{ width: 150, textAlign: 'right' }}>Verify</th>
+              <th className="th--go">Verify</th>
             </tr>
           </thead>
           <tbody>
@@ -60,7 +60,7 @@ export default function CertificationsSection() {
           </tbody>
         </table>
 
-        <div className="callout" style={{ marginTop: 'var(--sp-6)' }}>
+        <div className="callout certs-callout">
           <span className="callout__label">UK Agile Awards · 2014</span>
           <p>
             <strong>Best Use of Agile in the Private Sector.</strong> National recognition for

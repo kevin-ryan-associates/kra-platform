@@ -47,7 +47,7 @@ export default function AssessmentContactForm(): React.JSX.Element {
           <input type="hidden" name="_subject" value="Discovery Call Enquiry" />
 
           {status === 'error' && (
-            <div className="callout" data-accent="red" style={{ marginBottom: 'var(--sp-3)' }}>
+            <div className="callout callout--error" data-accent="red">
               <span className="callout__label">Something went wrong</span>
               <p>
                 Please try again, or email{' '}
@@ -114,7 +114,7 @@ export default function AssessmentContactForm(): React.JSX.Element {
             {status === 'submitting' ? 'Sending…' : 'Book a Discovery Call'}
           </button>
 
-          <p className="label fnote" style={{ marginTop: 'var(--sp-3)' }}>
+          <p className="label fnote fnote--form">
             No commitment. No pitch deck. A 30-minute conversation about your context.
           </p>
         </form>

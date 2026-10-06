@@ -115,7 +115,7 @@ Triggered on any push to `main` that changes files under `infra/`:
 1. Checkout the repository
 2. Set up OpenTofu CLI
 3. Authenticate to Azure via OIDC
-4. Run `tofu init` and `tofu plan -out=tfplan`
+4. Run `tofu init` and `tofu plan -out=tofuplan`
 5. Post the plan output to the GitHub Actions job summary for review
 6. Upload the plan file as an artifact for the apply job
 
@@ -126,7 +126,7 @@ Runs only after the plan job completes **and** a reviewer approves in the `produ
 1. Checkout the repository
 2. Set up OpenTofu and authenticate to Azure
 3. Download the plan artifact from the plan job
-4. Run `tofu apply tfplan` using the exact plan that was reviewed
+4. Run `tofu apply tofuplan` using the exact plan that was reviewed
 
 This two-stage approach ensures no infrastructure changes are applied without human review, while still keeping the plan deterministic — the same plan file produced during review is the one applied.
 

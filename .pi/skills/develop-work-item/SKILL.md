@@ -40,7 +40,9 @@ skills; load them when a step enters their domain:
   at creation time. Never file a work item outside an iteration.
 - **If no current iteration exists, create one before filing the item**:
   name it "Iteration N" in numerical order from the last existing iteration
-  (`plane_cycle` `list` → highest N → create "Iteration N+1"). Iterations are
+  (`plane_cycle` `list` → highest N → create "Iteration N+1" — the create
+  call **requires `owned_by`**; see the `manage-plane-workitems` skill
+  Constants). Iterations are
   7 days long, Monday of the current week → Sunday (`start_date` = the
   Monday of this week, `end_date` = the following Sunday), so mid-week
   creation still anchors to this week's Monday.

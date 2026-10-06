@@ -1,9 +1,9 @@
 ---
 name: "manage-plane-workitems"
 description: "Interact with the kra-platform-development Plane project for kra-platform — find spec/feature work items, file new work, and close the loop when done. Use for any Plane lookup, work item creation, or work item status update in this repo."
-version: 1.4
+version: 1.5
 created: "2026-09-23"
-updated: "2026-09-25"
+updated: "2026-10-06"
 ---
 
 ## When to Use
@@ -38,6 +38,8 @@ These rules are standing instructions from the repository owner and apply to **a
   - Cancelled → `b482efe9-f972-4b2a-a5dc-691269027466` (cancelled)
 - Epic work item type: `211926f4-3894-475a-b394-d0d28e8149a5` (`plane_workitem_type` `resolve` "Epic", `is_epic: true`); project features `epics` + `workitem_types` enabled 2026-09-25 (`plane_project` `update_features`). Epic example: KRA-13 "Update documentation" with children KRA-2..KRA-12.
 - Cycle Iteration 1 (renamed from "Sprint 1" 2026-09-25; dates set to 2026-09-21 → 2026-09-27, Mon→Sun; name future cycles "Iteration N", each Mon→Sun, 7 days, created per the `develop-work-item` skill's Intake rules): `b09126cc-ecb5-4e33-b20b-af190157cfbd` — `plane_cycle` `retrieve` gives authoritative dates.
+- Cycle Iteration 2 (2026-10-05 → 2026-10-11, Mon→Sun; created 2026-10-06 when KRA-24 needed a current iteration after Iteration 1 ended): `e8ed728c-ae8e-453b-b901-45b29e072cef`.
+- **`plane_cycle` `create` requires `owned_by`** even though the tool description marks it optional — Kevin's member UUID (`79e5762d-6e3e-4a8c-81a5-6114465744e0`, also visible as `owned_by`/`created_by` on any existing cycle or item). Without it the call fails with `Error: action 'create' requires: owned_by.` (observed 2026-10-06).
 - Story point estimates: project estimate system "Story Points" (Fibonacci) — estimate_id `0ae0d5bf-0f60-4dd4-80a6-9eb304dcdd85`. Point value → point UUID:
   - 1 → `075323f2-a128-4bd0-902c-fa6d4aecda83`
   - 2 → `4468f82a-bc41-4784-b4b8-10b2f6e7764d`
@@ -82,8 +84,10 @@ These rules are standing instructions from the repository owner and apply to **a
 - `workitem update` silently ignores `sort_order`: the call returns ok, but `updated_at` stays unchanged and a follow-up read shows the old value (verified 2026-09-23 setting kanban order on KRA-2…KRA-9). Plane's public API does not persist manual kanban ordering via PATCH, and the server exposes no reorder tool. Within-column board order can only be set by dragging cards in the Plane UI, or indirectly by sorting the board by `priority` (which the API does control). Always verify `sort_order` writes with a follow-up `retrieve` — do not trust the ok response.
 - Epics: enable via `plane_project` `update_features` (`epics: true`, `workitem_types: true`) before the Epic type is usable; then `plane_workitem_type` `resolve` (find-or-create, never duplicates). Epics carry no `state_group` (null) — child progress rolls up instead; an epic can still be added to a cycle. Give the epic `start_date`/`target_date` matching the cycle's dates.
 - `estimate_point` takes the point's UUID, never the numeric value — use the value→UUID map in Constants, or resolve via `plane_project_estimate` `retrieve` (for estimate_id) + `list_points`. `plane_project_estimate` has no top-level `list` action. Verify the write with a follow-up read (`estimate_point` shows the UUID on `retrieve_by_identifier`).
-- `plane_cycle` `manage_workitems` `add_ids`/`remove_ids` take a **comma-separated string, not a JSON array** (pydantic rejects lists) and return `null` — verify with `cycle` `list_workitems` afterwards.
-- Work item reads (`list`, `retrieve_by_identifier`, `update` responses) show `cycle_id: null` for **cycle members too** (observed 2026-09-25: every Sprint 1 item, incl. ones confirmed in the cycle, reads back `cycle_id: null`) — `cycle_id` on a work item read is not evidence of cycle membership either way. Verify membership only via `plane_cycle` `list_workitems`.
+- `plane_cycle` `manage_workitems` `add_ids`/`remove_ids` take a **comma-separated string, not a JSON array** (pydantic rejects lists) and return `null` — verify with `cycle` `list_workitems` afterwards. There are **no `operation` or `workitem_ids` parameters** — `add_ids`/`remove_ids` are the top-level params themselves; passing `operation: "add_ids", workitem_ids: …` fails schema validation ("data must NOT have additional properties", observed 2026-10-06). A single UUID string is fine.
+- **Plane tool errors arrive as `result: "Error: …"` strings inside an otherwise-ok response** — `tools.call` resolves `ok: true` while the write silently failed (first observed 2026-10-06: `cycle create` without `owned_by`). After any create/update, check `structuredContent.result` for an `Error:` prefix (or read the field back) before trusting `.id`/`state` — a missing id in the unwrap may mean the call failed, not that the field is absent.
+- PQL `id` is the **sequence identifier** (e.g. `"KRA-24"`), not the work-item UUID — `id in ("<uuid>")` silently returns an empty list (observed 2026-10-06). To resolve a just-created item's `KRA-NN` (the `create` response may not surface the identifier through the mcpScript unwrap), call `plane_workitem` `list` with `pql: 'title ~ "<unique title words>"'`. The contains operator is `~` on the `title` field — `name contains "…"` is invalid PQL.
+- Work item reads (`list`, `retrieve_by_identifier`, `update` responses) **sometimes** show `cycle_id: null` for cycle members (observed 2026-09-25 on every Sprint 1 item; but the direct-`mcp` `workitem list` call returned a populated `cycle_id` for KRA-24 on 2026-10-06) — `cycle_id` on a work item read is unreliable evidence of cycle membership either way. Verify membership only via `plane_cycle` `list_workitems`.
 - PQL cannot filter on `parent` (rejected: "Filtering on field 'parent' is not allowed") — use the relation function `childOf("KRA-13")` instead. `parent` also does not come back in `workitem list` sparse fieldsets — verify `parent` writes with `retrieve_by_identifier`, not with `list` + `fields`.
 - Don't batch deviations/learnings into one end-of-task comment — post them on the item as they are discovered.
 - Comments go through `workitem_comment` (`create`/`list` with `project_id` + `workitem_id`), not `workitem`. `workitem_comment list` reads them back when resuming an item.

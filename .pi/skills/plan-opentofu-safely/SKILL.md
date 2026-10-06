@@ -68,14 +68,14 @@ Sensitive variables (set in `.env.agents` as `TF_VAR_*`):
 
    ```bash
    tflint
-   tofu plan -input=false -out=/tmp/kr-tfplan.tfplan
+   tofu plan -input=false -out=/tmp/kr-tofuplan.tfplan
    ```
 
 4. To apply (only when the user explicitly asks): apply the saved plan with
    `-input=false` and `-auto-approve` only after the user confirms:
 
    ```bash
-   tofu apply -input=false -auto-approve /tmp/kr-tfplan.tfplan
+   tofu apply -input=false -auto-approve /tmp/kr-tofuplan.tfplan
    ```
 
 ## Pitfalls
@@ -117,7 +117,7 @@ Sensitive variables (set in `.env.agents` as `TF_VAR_*`):
   applies the **infra variable defaults**, so defaults are live values;
   stale defaults are apply hazards.
 - The tofu apply job is gated on the `production` environment — unapproved
-  runs queue indefinitely (`gh run cancel` stale ones); decode the tfplan
+  runs queue indefinitely (`gh run cancel` stale ones); decode the tofuplan
   artifact before approving. Since CI pins tofu 1.13.1 to match local, the
   local `tofu show` decodes CI artifacts directly — run it **from `infra/`**
   (provider plugins are cached there); running it elsewhere fails with

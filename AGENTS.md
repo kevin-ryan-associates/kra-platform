@@ -260,7 +260,7 @@ To onboard a new site into Flux CD:
 - The `actions/checkout` action is pinned at v5.1.0 (SHA `fbc6f399…`) in the deploy/opentofu/validate workflows — do **not** bump it to v6+ (a credential-persistence change would risk the deploy workflow's auto-commit-to-main).
 - `deploy.yml` auto-commits image-tag updates to `main` after deploys — a push right after may be non-fast-forward; rebase and push again.
 - `opentofu.yml` passes the `TF_VAR_*` secrets but cannot read the gitignored `terraform.tfvars` — for non-secret variables CI **applies use the infra variable defaults**, so defaults are live values; stale defaults are apply hazards.
-- The tofu apply job is gated on the `production` environment; unapproved runs queue indefinitely — `gh run cancel` stale ones, and decode the tfplan artifact before approving (see the `plan-opentofu-safely` skill; CI pins `tofu_version: 1.13.1` to match local, so the local `tofu show` decodes CI artifacts directly).
+- The tofu apply job is gated on the `production` environment; unapproved runs queue indefinitely — `gh run cancel` stale ones, and decode the tofuplan artifact before approving (see the `plan-opentofu-safely` skill; CI pins `tofu_version: 1.13.1` to match local, so the local `tofu show` decodes CI artifacts directly).
 - PR merges use merge commits.
 - After a successful deploy, a stale page at the edge is **Cloudflare cache** (`cf-cache-status: HIT`), not a Flux failure — purge the zone (`purge_everything` via the Cloudflare API, `CLOUDFLARE_API_TOKEN` from `.env.agents`). There are 4 Cloudflare zones (brand/docs/hq are subdomains of the kevinryan.io zone, not separate zones); zone IDs live only in `infra/terraform.tfvars`. KRA-17 tracks automating the post-deploy purge.
 

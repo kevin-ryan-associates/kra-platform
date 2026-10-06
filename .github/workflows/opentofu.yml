@@ -1,4 +1,4 @@
-name: Terraform Plan and Apply
+name: OpenTofu Plan and Apply
 
 on:
   push:
@@ -13,14 +13,16 @@ permissions:
 
 jobs:
   plan:
-    name: Terraform Plan
+    name: OpenTofu Plan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+        with:
+          tofu_version: 1.13.1
 
       - name: Log in to Azure
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
@@ -29,18 +31,18 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Terraform Init
+      - name: OpenTofu Init
         working-directory: infra
-        run: terraform init
+        run: tofu init
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: "true"
 
-      - name: Terraform Plan
+      - name: OpenTofu Plan
         working-directory: infra
-        run: terraform plan -input=false -out=tfplan -no-color 2>&1 | tee plan-output.txt
+        run: tofu plan -input=false -out=tfplan -no-color 2>&1 | tee plan-output.txt
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -66,7 +68,7 @@ jobs:
         working-directory: infra
         run: |
           {
-            echo '### Terraform Plan Output'
+            echo '### OpenTofu Plan Output'
             echo ''
             echo '```'
             cat plan-output.txt
@@ -80,7 +82,7 @@ jobs:
           path: infra/tfplan
 
   apply:
-    name: Terraform Apply
+    name: OpenTofu Apply
     needs: plan
     runs-on: ubuntu-latest
     environment:
@@ -89,8 +91,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+        with:
+          tofu_version: 1.13.1
 
       - name: Log in to Azure
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
@@ -99,9 +103,9 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Terraform Init
+      - name: OpenTofu Init
         working-directory: infra
-        run: terraform init
+        run: tofu init
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -114,9 +118,9 @@ jobs:
           name: tfplan
           path: infra
 
-      - name: Terraform Apply
+      - name: OpenTofu Apply
         working-directory: infra
-        run: terraform apply tfplan
+        run: tofu apply tfplan
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}

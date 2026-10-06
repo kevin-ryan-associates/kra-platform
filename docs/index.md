@@ -12,7 +12,7 @@ A monorepo does not mean a monolith. This repository contains multiple independe
 The monorepo approach was chosen deliberately for several reasons:
 
 - **AI agent context.** A monorepo gives AI coding agents full visibility across application code, infrastructure definitions, deployment manifests, and documentation in a single repository. This eliminates the context engineering overhead of stitching together knowledge from scattered microservice repos, and allows agents to reason about cross-cutting changes (e.g. adding a new site end-to-end) with far less prompting.
-- **Atomic changes.** A single commit can update application code, its Kubernetes manifests, Terraform configuration, and documentation together — making changes reviewable and revertible as a unit.
+- **Atomic changes.** A single commit can update application code, its Kubernetes manifests, OpenTofu configuration, and documentation together — making changes reviewable and revertible as a unit.
 - **Shared tooling.** Linting, formatting, commit hooks, and CI/CD patterns are defined once and applied consistently across all sites.
 - **Discoverability.** New contributors (human or AI) can understand the entire platform from one place rather than navigating a constellation of repositories.
 
@@ -36,8 +36,8 @@ Sites with no build step serve static HTML directly via nginx. All sites are con
 
 ```text
 kevin-ryan-platform/
-├── .github/workflows/         # CI/CD — shared deploy workflow, Terraform, and validation
-├── infra/                     # Terraform — Azure VMs, ACR, Key Vault, PostgreSQL, Cloudflare DNS
+├── .github/workflows/         # CI/CD — shared deploy workflow, OpenTofu, and validation
+├── infra/                     # OpenTofu — Azure VMs, ACR, Key Vault, PostgreSQL, Cloudflare DNS
 ├── scripts/                   # Helper scripts (sync-hq-theme.sh — HQ theme ConfigMap sync)
 ├── k8s/                       # Kubernetes manifests
 │   ├── flux-system/           # Flux CD bootstrap + per-site Kustomization CRs
@@ -73,7 +73,7 @@ graph TD
         direction LR
         sites["Sites ×7"]
         k8smanifests["K8s Manifests"]
-        tf["Terraform"]
+        tf["OpenTofu"]
     end
 
     subgraph ci["GitHub Actions"]
@@ -122,7 +122,7 @@ graph TD
 
 ## Infrastructure
 
-All infrastructure is defined in Terraform and deployed to Azure:
+All infrastructure is defined in OpenTofu and deployed to Azure:
 
 - **Compute** — Two-node K3s cluster on Ubuntu 24.04 LTS VMs
 - **Container Registry** — Azure Container Registry (ACR) for production image pulls; GitHub Container Registry (GHCR) as a secondary

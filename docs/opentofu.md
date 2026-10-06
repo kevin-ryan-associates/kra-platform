@@ -1,15 +1,15 @@
 ---
-title: Terraform Infrastructure
-description: Comprehensive documentation of the Terraform-managed infrastructure that provisions Azure resources, Cloudflare DNS, and GitHub OIDC for the Kevin Ryan platform.
+title: OpenTofu Infrastructure
+description: Comprehensive documentation of the OpenTofu-managed infrastructure that provisions Azure resources, Cloudflare DNS, and GitHub OIDC for the Kevin Ryan platform.
 ---
 
-All infrastructure for this platform is defined as code in the `infra/` directory using <a href="https://www.terraform.io/" target="_blank" rel="noopener noreferrer">Terraform</a>. A push to `main` that changes files under `infra/` triggers the Terraform workflow (plan + manual approval + apply).
+All infrastructure for this platform is defined as code in the `infra/` directory using <a href="https://opentofu.org/" target="_blank" rel="noopener noreferrer">OpenTofu</a>. A push to `main` that changes files under `infra/` triggers the OpenTofu workflow (plan + manual approval + apply).
 
 ## Architecture Overview
 
 ```mermaid
 graph TD
-    subgraph tf["Terraform (infra/)"]
+    subgraph tf["OpenTofu (infra/)"]
         root["Root Module"]
         boot["Bootstrap"]
     end
@@ -73,7 +73,7 @@ infra/
 
 ## State Backend
 
-Terraform state is stored remotely in Azure Blob Storage:
+OpenTofu state is stored remotely in Azure Blob Storage:
 
 | Setting | Value |
 |---------|-------|
@@ -145,7 +145,7 @@ Creates Ubuntu Linux VMs with system-assigned managed identities. The module is 
 | Zone | 1 |
 | Identity | System-assigned managed identity |
 
-Each VM receives a cloud-init template at creation time that bootstraps the K3s cluster. The `custom_data` lifecycle is set to `ignore_changes` so Terraform doesn't recreate VMs when the cloud-init template changes.
+Each VM receives a cloud-init template at creation time that bootstraps the K3s cluster. The `custom_data` lifecycle is set to `ignore_changes` so OpenTofu doesn't recreate VMs when the cloud-init template changes.
 
 ### Cloud-Init: K3s Server (node1)
 
@@ -207,7 +207,7 @@ configs:
 
 ### Circular Dependency Resolution
 
-There is a potential circular dependency: the Key Vault module needs VM principal IDs (to grant RBAC), and the cloud-init templates need the Key Vault name (to retrieve secrets). This is resolved by passing the Key Vault name as a root-level variable (`var.keyvault_name`) rather than referencing the module output, breaking the Terraform dependency cycle.
+There is a potential circular dependency: the Key Vault module needs VM principal IDs (to grant RBAC), and the cloud-init templates need the Key Vault name (to retrieve secrets). This is resolved by passing the Key Vault name as a root-level variable (`var.keyvault_name`) rather than referencing the module output, breaking the OpenTofu dependency cycle.
 
 ## Registry Module
 
@@ -236,11 +236,11 @@ Creates an Azure Key Vault with RBAC authorization (no access policies):
 | Principal | Role | Purpose |
 |-----------|------|---------|
 | node1 + node2 (managed identity) | Key Vault Secrets User | Read secrets at runtime via External Secrets Operator |
-| Terraform caller | Key Vault Secrets Officer | Create and manage secrets during `terraform apply` |
+| OpenTofu caller | Key Vault Secrets Officer | Create and manage secrets during `tofu apply` |
 
 ### Managed Secrets
 
-Terraform generates and stores these secrets in Key Vault:
+OpenTofu generates and stores these secrets in Key Vault:
 
 | Secret | Source | Consumer |
 |--------|--------|----------|
@@ -325,16 +325,16 @@ Configures passwordless authentication between GitHub Actions and Azure using Op
 | `main-branch` | `repo:kevin-ryan-associates/kra-platform:ref:refs/heads/main` |
 | `production-env` | `repo:kevin-ryan-associates/kra-platform:environment:production` |
 
-The `main-branch` credential allows deploy workflows to authenticate. The `production-env` credential allows the Terraform apply job (which runs in the `production` GitHub environment) to authenticate.
+The `main-branch` credential allows deploy workflows to authenticate. The `production-env` credential allows the OpenTofu apply job (which runs in the `production` GitHub environment) to authenticate.
 
 ### Role Assignments
 
 | Scope | Role | Purpose |
 |-------|------|---------|
 | ACR | `AcrPush` | Push Docker images from CI |
-| Resource group | `Contributor` | Manage resources during Terraform apply |
-| State storage account | `Storage Blob Data Contributor` | Read/write Terraform state |
-| State resource group | `Reader` | `terraform init` reads storage account properties |
+| Resource group | `Contributor` | Manage resources during OpenTofu apply |
+| State storage account | `Storage Blob Data Contributor` | Read/write OpenTofu state |
+| State resource group | `Reader` | `tofu init` reads storage account properties |
 
 ## Outputs
 
@@ -353,7 +353,7 @@ The root module exports values needed for GitHub Actions configuration:
 
 ## Dependency Graph
 
-The module dependency order during `terraform apply`:
+The module dependency order during `tofu apply`:
 
 ```mermaid
 graph TD

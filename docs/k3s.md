@@ -114,13 +114,13 @@ This means:
 
 ## Cluster Bootstrap
 
-The K3s cluster is fully automated — no manual SSH or `kubectl` commands are required after `terraform apply`. Both nodes are provisioned with cloud-init templates that execute on first boot.
+The K3s cluster is fully automated — no manual SSH or `kubectl` commands are required after `tofu apply`. Both nodes are provisioned with cloud-init templates that execute on first boot.
 
 ### Bootstrap Sequence
 
 ```mermaid
 graph TD
-    subgraph tf["Terraform Apply"]
+    subgraph tf["OpenTofu Apply"]
         A["Create VMs with cloud-init"]
     end
 
@@ -157,7 +157,7 @@ graph TD
 
 Both nodes need a shared K3s token to form the cluster. This is handled without any manual intervention:
 
-1. Terraform generates a random 48-character token and stores it in Azure Key Vault
+1. OpenTofu generates a random 48-character token and stores it in Azure Key Vault
 2. Both cloud-init scripts retrieve the token using their VM's managed identity
 3. A retry loop (30 attempts, 10 seconds apart) handles the race condition where a VM may boot before the Key Vault secret is written
 
@@ -229,7 +229,7 @@ The PostgreSQL Flexible Server lives on a separate delegated subnet (`10.0.2.0/2
 
 The current two-node architecture is right-sized for this platform's workload. If needs change:
 
-- **Vertical scaling** — change `var.vm_size` in Terraform to a larger SKU. No K3s or application changes needed.
+- **Vertical scaling** — change `var.vm_size` in OpenTofu to a larger SKU. No K3s or application changes needed.
 - **Horizontal scaling** — add more agent nodes by calling the compute module again with a new cloud-init template joining the cluster. The existing Flux Kustomizations and Deployments will automatically schedule pods across the new capacity.
 - **Migration to managed K8s** — since all manifests use standard Kubernetes APIs, the `k8s/` directory can be applied to AKS, EKS, or GKE with no changes. The only K3s-specific configuration is the cloud-init bootstrap, which would be replaced by the managed service's provisioning.
 

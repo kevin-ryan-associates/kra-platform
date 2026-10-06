@@ -15,7 +15,7 @@ const ACCENT_SCRIPT = `
 (function () {
   var MAP = [
     [/^\\/adr(\\/|$)/, 'magenta'],
-    [/^\\/(k3s|node-access|terraform|cloudflare|traefik|flux-cd)(\\/|$)/, 'cyan'],
+    [/^\\/(k3s|node-access|opentofu|cloudflare|traefik|flux-cd)(\\/|$)/, 'cyan'],
     [/^\\/(ci-cd|docker-builds)(\\/|$)/, 'orange'],
     [/^\\/(observability|umami)(\\/|$)/, 'green'],
     [/^\\/sites(\\/|$)/, 'yellow']
@@ -136,7 +136,7 @@ export default defineConfig({
         },
         { label: 'K3s Architecture', link: '/k3s/' },
         { label: 'Node Access (SSH / kubectl / k9s)', link: '/node-access/' },
-        { label: 'Terraform Infrastructure', link: '/terraform/' },
+        { label: 'OpenTofu Infrastructure', link: '/opentofu/' },
         { label: 'Cloudflare DNS & CDN', link: '/cloudflare/' },
         { label: 'Traefik Ingress', link: '/traefik/' },
         { label: 'Flux CD Deployment', link: '/flux-cd/' },

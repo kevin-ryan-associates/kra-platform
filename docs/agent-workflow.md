@@ -12,7 +12,7 @@ This repository is **agent-native**: it is designed so that AI coding agents can
 - **Project summary and stack** — the seven sites, their stacks, and which constraints apply where
 - **Key constraints** — static export for static sites, the deliberate hq.kevinryan.io exception (upstream LibreChat image, overlay theming)
 - **Build commands** — the pnpm workspace commands for install, dev, build, and lint per site
-- **Available toolchain** — the locally installed CLI tools (rg, fd, jq, yq, yamllint, kubectl, flux, terraform, tflint, docker, gh) with the rule to prefer them over hand-rolled scripts, and the note that CI only guarantees Node.js 22 + pnpm
+- **Available toolchain** — the locally installed CLI tools (rg, fd, jq, yq, yamllint, kubectl, flux, tofu, tflint, docker, gh) with the rule to prefer them over hand-rolled scripts, and the note that CI only guarantees Node.js 22 + pnpm
 - **Documentation conventions** — e.g. never put `#` comments on the same line as a command in Markdown code blocks (line-yanking in the editor)
 - **Prohibited patterns** — `any` without justification, custom CSS where Tailwind suffices, server components with runtime fetching, API routes/middleware/server actions, inline styles, index as React key
 - **Pre-commit checklist** — build/lint/type checks, alt text, no unjustified dependencies, component size limits
@@ -26,7 +26,7 @@ Procedural knowledge lives as version-controlled skills alongside the code. Each
 | Skill | Purpose |
 |-------|---------|
 | `access-k3s-cluster` | Open the kr-node1 SSH tunnel and run kubectl/flux against the cluster without hanging |
-| `plan-terraform-safely` | Run terraform fmt/validate/plan with `-input=false` and the `.env.agents` → `TF_VAR_*` flow |
+| `plan-opentofu-safely` | Run tofu fmt/validate/plan with `-input=false` and the `.env.agents` → `TF_VAR_*` flow |
 | `onboard-flux-site` | Onboard a new site into Flux CD with full dry-run validation |
 | `patch-librechat-theme` | Change hq.kevinryan.io theming or bump the LibreChat image digest safely (mandatory throwaway-pod guard test) |
 | `manage-plane-workitems` | Interact with the kra-platform-development Plane project — the ticket lifecycle below |
@@ -56,12 +56,12 @@ The project migrated from Linear to Plane on 2026-09-23. All 11 Linear issues we
 
 The repo is **public**, so secrets are never committed. `.env.agents` (gitignored — guaranteed by `.gitignore`, verified with `git check-ignore`) is the **single source of truth for every secret**. `.env.agents.example` is the committed template with placeholders only.
 
-The split between the two Terraform inputs is rule-based, driven by Terraform's own `sensitive = true` flag:
+The split between the two OpenTofu inputs is rule-based, driven by OpenTofu's own `sensitive = true` flag:
 
 - **`infra/terraform.tfvars`** (gitignored) — **non-secret config only**: location, VM size, admin username, ACR and Key Vault names, repo identity, the admin SSH public key, and the four Cloudflare zone IDs
-- **`.env.agents`** — **every secret**: Azure service-principal credentials (`ARM_*`/`AZURE_*`), ACR access, `KUBECONFIG`, Cloudflare and Flux tokens, and one `TF_VAR_<name>` per sensitive Terraform variable
+- **`.env.agents`** — **every secret**: Azure service-principal credentials (`ARM_*`/`AZURE_*`), ACR access, `KUBECONFIG`, Cloudflare and Flux tokens, and one `TF_VAR_<name>` per sensitive OpenTofu variable
 
-Terraform reads `TF_VAR_<name>` from the environment natively — no `tfvars` entry needed for secrets. Load before any tool run:
+OpenTofu reads `TF_VAR_<name>` from the environment natively — no `tfvars` entry needed for secrets. Load before any tool run:
 
 ```bash
 set -a

@@ -3,7 +3,7 @@ title: GitHub Actions Workflows
 description: Comprehensive guide to the GitHub Actions workflows that build, deploy, and manage infrastructure for the Kevin Ryan platform.
 ---
 
-This platform uses GitHub Actions for all CI/CD. There are three workflows in total — a unified site deployment workflow (`deploy.yml`), an infrastructure workflow (`terraform.yml`), and a validation workflow (`validate.yml`). All workflow files live in `.github/workflows/`.
+This platform uses GitHub Actions for all CI/CD. There are three workflows in total — a unified site deployment workflow (`deploy.yml`), an infrastructure workflow (`opentofu.yml`), and a validation workflow (`validate.yml`). All workflow files live in `.github/workflows/`.
 
 ## Design Principles
 
@@ -11,7 +11,7 @@ Every workflow in this repository follows a consistent set of conventions:
 
 - **Path-filtered triggers.** The deploy workflow only runs when files under `sites/**` or `docs/**` change on `main`, avoiding unnecessary builds.
 - **Pinned action versions.** All third-party actions are pinned to full commit SHAs rather than tags, preventing supply-chain attacks from tag mutation.
-- **OIDC authentication.** Azure credentials are never stored as secrets. GitHub Actions authenticates via OpenID Connect federated identity, configured in the `github-oidc` Terraform module.
+- **OIDC authentication.** Azure credentials are never stored as secrets. GitHub Actions authenticates via OpenID Connect federated identity, configured in the `github-oidc` OpenTofu module.
 - **Concurrency control.** Each site deploys under a per-site concurrency group (`deploy-<site>`, `cancel-in-progress: false`), ensuring in-flight deployments complete before the next one starts while still allowing different sites to deploy in parallel.
 - **Manual dispatch.** The deploy workflow supports `workflow_dispatch` with a `site` dropdown (including an `all` option) for manual reruns without requiring a code change.
 
@@ -78,7 +78,7 @@ The repo's three workflows and their trigger paths:
 | Workflow | File | Trigger Path | Scope |
 |----------|------|--------------|-------|
 | Build and Deploy Site | `deploy.yml` | `sites/**` and `docs/**` | All sites with a Dockerfile (aiimmigrants.com, brand.kevinryan.io, distributedequity.org, docs.kevinryan.io, kevinryan.io; hq.kevinryan.io deploys LibreChat from the upstream pre-built image and has no Dockerfile, so the deploy workflow auto-skips it — its manifests deploy via Flux) |
-| Terraform Plan and Apply | `terraform.yml` | `infra/**` | Azure infrastructure |
+| OpenTofu Plan and Apply | `opentofu.yml` | `infra/**` | Azure infrastructure |
 | Validate | `validate.yml` | `k8s/**`, `sites/hq-kevinryan-io/**`, `scripts/**` | Manifest linting + HQ theme drift check |
 
 The `detect` job maps changed paths to sites: files under `sites/<site>/…` map to that site, and files under `docs/…` map to the `docs-kevinryan-io` site, since the docs site symlinks content from the `docs/` directory. Increasing the SHA range (or choosing `all` in `workflow_dispatch`) gives rebuilds for multiple sites in a single run via the matrix.
@@ -92,20 +92,20 @@ The deploy workflow requests two permission scopes:
 | `contents: write` | Commit the updated K8s manifest back to `main` |
 | `id-token: write` | Request an OIDC token for Azure authentication |
 
-## Terraform Workflow
+## OpenTofu Workflow
 
-The infrastructure workflow (`terraform.yml`) manages all Azure and Cloudflare resources. It follows a plan/approve/apply pattern with environment protection.
+The infrastructure workflow (`opentofu.yml`) manages all Azure and Cloudflare resources. It follows a plan/approve/apply pattern with environment protection.
 
 ### Pipeline
 
 ```mermaid
 graph TD
-    A[Push to main<br/>infra/** changed] --> B[Terraform Plan]
+    A[Push to main<br/>infra/** changed] --> B[OpenTofu Plan]
     B --> C[Post plan to job summary]
     C --> D[Upload plan artifact]
     D --> E{Manual approval<br/>production environment}
     E -->|Approved| F[Download plan artifact]
-    F --> G[Terraform Apply]
+    F --> G[OpenTofu Apply]
 ```
 
 ### Plan Job
@@ -113,9 +113,9 @@ graph TD
 Triggered on any push to `main` that changes files under `infra/`:
 
 1. Checkout the repository
-2. Set up Terraform CLI
+2. Set up OpenTofu CLI
 3. Authenticate to Azure via OIDC
-4. Run `terraform init` and `terraform plan -out=tfplan`
+4. Run `tofu init` and `tofu plan -out=tfplan`
 5. Post the plan output to the GitHub Actions job summary for review
 6. Upload the plan file as an artifact for the apply job
 
@@ -124,9 +124,9 @@ Triggered on any push to `main` that changes files under `infra/`:
 Runs only after the plan job completes **and** a reviewer approves in the `production` GitHub environment:
 
 1. Checkout the repository
-2. Set up Terraform and authenticate to Azure
+2. Set up OpenTofu and authenticate to Azure
 3. Download the plan artifact from the plan job
-4. Run `terraform apply tfplan` using the exact plan that was reviewed
+4. Run `tofu apply tfplan` using the exact plan that was reviewed
 
 This two-stage approach ensures no infrastructure changes are applied without human review, while still keeping the plan deterministic — the same plan file produced during review is the one applied.
 
@@ -134,14 +134,14 @@ This two-stage approach ensures no infrastructure changes are applied without hu
 
 | Permission | Reason |
 |------------|--------|
-| `contents: read` | Read the Terraform configuration |
+| `contents: read` | Read the OpenTofu configuration |
 | `id-token: write` | Request an OIDC token for Azure authentication |
 
-Note that the Terraform workflow only needs `contents: read` (not `write`) since it does not commit anything back to the repository.
+Note that the OpenTofu workflow only needs `contents: read` (not `write`) since it does not commit anything back to the repository.
 
 ### Secrets and Variables
 
-The Terraform workflow passes several secrets as environment variables:
+The OpenTofu workflow passes several secrets as environment variables:
 
 | Variable | Source |
 |----------|--------|
@@ -168,8 +168,8 @@ The workflow only requests `contents: read` — it is read-only by design and ne
 
 - **No long-lived credentials.** Azure authentication uses OIDC federated identity throughout. No client secrets are stored in GitHub.
 - **Pinned actions.** Every `uses:` reference is pinned to a full commit SHA with a version comment, preventing compromised tags from injecting malicious code.
-- **Least privilege.** Each workflow requests only the permissions it needs. Deploy workflows need write access; Terraform only needs read.
-- **Environment protection.** Terraform apply requires manual approval via GitHub's `production` environment, preventing accidental infrastructure changes.
+- **Least privilege.** Each workflow requests only the permissions it needs. Deploy workflows need write access; OpenTofu only needs read.
+- **Environment protection.** OpenTofu apply requires manual approval via GitHub's `production` environment, preventing accidental infrastructure changes.
 - **Concurrency groups.** Per-site groups prevent parallel deployments to the same site from creating race conditions in the cluster.
 
 ## Adding a New Site

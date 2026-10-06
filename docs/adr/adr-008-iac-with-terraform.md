@@ -2,7 +2,7 @@
 title: "ADR-008: Infrastructure-as-Code with Terraform"
 ---
 
-**Status:** Accepted
+**Status:** Accepted — tooling choice superseded by [ADR-025](adr-025-adopt-opentofu.md) (OpenTofu), 2026-10-06
 **Date:** 2026-02-28
 **Decision Makers:** Human + AI
 **Prompted By:** ADR-005 (K3s VM), ADR-007 (managed PostgreSQL), and ADR-002 (ACR) define Azure resources that must be provisioned declaratively and reproducibly. ADR-005 also specifies Cloudflare for DNS and CDN. A single IaC framework must manage both Azure and Cloudflare resources in one plan/apply cycle.

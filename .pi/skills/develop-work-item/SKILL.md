@@ -23,7 +23,7 @@ skills; load them when a step enters their domain:
 - `manage-plane-workitems` — Plane MCP mechanics + the mandatory Ticket
   Lifecycle protocol (state transitions, plan/deviation comments, Done rules).
 - `access-k3s-cluster` — cluster access, Flux reconciliation, deploy checks.
-- `plan-terraform-safely` — any `infra/` change.
+- `plan-opentofu-safely` — any `infra/` change.
 - `patch-librechat-theme` — any hq.kevinryan.io change.
 - `onboard-flux-site` — adding a new site.
 

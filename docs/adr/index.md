@@ -42,3 +42,4 @@ An ADR is a short document that captures a significant architectural decision. E
 | [022](./adr-022-retire-sddbook-specmcp-sites) | Retire sddbook.com and specmcp.ai Sites | Accepted |
 | [023](./adr-023-librechat-theme-overlay) | LibreChat Theming via Overlay on Upstream Image | Accepted |
 | [024](./adr-024-retire-sdd-process-artifacts) | Retire the SDD Process and Artifacts | Accepted |
+| [025](./adr-025-adopt-opentofu) | Adopt OpenTofu over Terraform (BUSL) | Accepted |

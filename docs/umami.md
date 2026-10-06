@@ -280,7 +280,7 @@ Umami stores all analytics data in the `umami_db` database on the Azure PostgreS
 | Network | Private subnet, no public access |
 | SSL | Required (`sslmode=require`) |
 
-The database is provisioned by Terraform as part of the PostgreSQL module. The `PGCRYPTO` extension is enabled server-wide.
+The database is provisioned by OpenTofu as part of the PostgreSQL module. The `PGCRYPTO` extension is enabled server-wide.
 
 ## Flux CD Integration
 
@@ -307,7 +307,7 @@ This ensures the `ClusterSecretStore` exists before Umami's `ExternalSecret` is 
 
 ## DNS
 
-The `analytics.kevinryan.io` A record is managed by Terraform in the root module (not via the Cloudflare module, since it's a service subdomain rather than a site):
+The `analytics.kevinryan.io` A record is managed by OpenTofu in the root module (not via the Cloudflare module, since it's a service subdomain rather than a site):
 
 ```hcl
 resource "cloudflare_record" "analytics" {

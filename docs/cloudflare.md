@@ -3,7 +3,7 @@ title: Cloudflare DNS & CDN
 description: How Cloudflare provides DNS management, CDN caching, DDoS protection, and TLS termination for all domains in the platform.
 ---
 
-All public traffic to this platform flows through <a href="https://www.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare</a>. Cloudflare serves as the DNS provider, CDN, DDoS shield, and edge TLS terminator for every domain. DNS records and cache rules are managed entirely through Terraform.
+All public traffic to this platform flows through <a href="https://www.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare</a>. Cloudflare serves as the DNS provider, CDN, DDoS shield, and edge TLS terminator for every domain. DNS records and cache rules are managed entirely through OpenTofu.
 
 ## What Cloudflare Provides
 
@@ -43,7 +43,7 @@ graph LR
 
 Four separate Cloudflare zones are managed, each with its own zone ID:
 
-| Zone | Domain | Subdomains | Terraform Reference |
+| Zone | Domain | Subdomains | OpenTofu Reference |
 |------|--------|------------|-------------------|
 | kevinryan.io | `kevinryan.io` | `www`, `brand`, `docs`, `hq`, `analytics`, `monitoring`, `dam` | `module.cloudflare` + root records |
 | aiimmigrants.com | `aiimmigrants.com` | `www` | `module.cloudflare_aiimmigrants` |
@@ -54,7 +54,7 @@ Four separate Cloudflare zones are managed, each with its own zone ID:
 
 ### Per-Zone Records (Cloudflare Module)
 
-The Cloudflare Terraform module creates DNS records for each domain zone. Every zone gets:
+The Cloudflare OpenTofu module creates DNS records for each domain zone. Every zone gets:
 
 | Record | Type | Name | Content | Proxied |
 |--------|------|------|---------|---------|
@@ -84,7 +84,7 @@ The `kevinryan.io` zone has the most records since it hosts both site subdomains
 | `analytics` | analytics.kevinryan.io | Root module (standalone record) |
 | `monitoring` | monitoring.kevinryan.io | Root module (standalone record) |
 
-The `analytics` and `monitoring` records are managed directly in the root Terraform module rather than via the Cloudflare module, since they are platform service subdomains rather than site subdomains:
+The `analytics` and `monitoring` records are managed directly in the root OpenTofu module rather than via the Cloudflare module, since they are platform service subdomains rather than site subdomains:
 
 ```hcl
 resource "cloudflare_record" "analytics" {
@@ -145,13 +145,13 @@ graph LR
 
 **Full** mode (not Full Strict) is used because Traefik serves a self-signed certificate by default. Full mode encrypts traffic between Cloudflare and the origin but does not require a CA-signed certificate on the origin. This provides encryption in transit without the overhead of managing Let's Encrypt certificates on the cluster.
 
-> **Note:** SSL mode is currently configured manually in the Cloudflare dashboard rather than via Terraform. The API token lacks `Zone Settings:Edit` permission, and the relevant Terraform resource has known issues with read-only settings.
+> **Note:** SSL mode is currently configured manually in the Cloudflare dashboard rather than via OpenTofu. The API token lacks `Zone Settings:Edit` permission, and the relevant OpenTofu resource has known issues with read-only settings.
 
 ## CDN Caching
 
 ### Cache Rules
 
-Each domain zone has a Terraform-managed cache ruleset that overrides origin cache headers:
+Each domain zone has an OpenTofu-managed cache ruleset that overrides origin cache headers:
 
 ```hcl
 resource "cloudflare_ruleset" "cache" {
@@ -234,7 +234,7 @@ Beyond DDoS protection, proxying through Cloudflare provides:
 | **Browser integrity check** | Challenges requests with suspicious characteristics |
 | **Hotlink protection** | Prevents other sites from embedding your assets |
 
-## Terraform Module
+## OpenTofu Module
 
 The Cloudflare module (`infra/modules/cloudflare/`) is called once per domain zone:
 
@@ -276,7 +276,7 @@ Each invocation creates:
 To add a new domain to the platform:
 
 1. Register the domain and set Cloudflare as the authoritative nameserver
-2. Add the zone ID as a new Terraform variable in `infra/variables.tf`
+2. Add the zone ID as a new OpenTofu variable in `infra/variables.tf`
 3. Add a new Cloudflare module call in `infra/main.tf`:
 
 ```hcl
@@ -289,7 +289,7 @@ module "cloudflare_newsite" {
 ```
 
 1. Pass the zone ID value via `terraform.tfvars` or as a GitHub Actions secret
-1. Run `terraform plan` and `terraform apply` (via the Terraform workflow)
+1. Run `tofu plan` and `tofu apply` (via the OpenTofu workflow)
 
 The module handles root, www, and cache rule creation automatically. For additional subdomains, add them to the `subdomains` list.
 

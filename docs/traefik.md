@@ -195,7 +195,7 @@ spec:
 
 1. Ensure the corresponding `service.yaml` exists in the same directory with a selector matching the deployment's pod labels.
 
-1. Add DNS records in Terraform (Cloudflare module) pointing the domain to the cluster's public IP.
+1. Add DNS records in OpenTofu (Cloudflare module) pointing the domain to the cluster's public IP.
 
 1. Merge to `main`. Flux applies the IngressRoute and Traefik begins routing traffic to the new service within the reconciliation interval.
 

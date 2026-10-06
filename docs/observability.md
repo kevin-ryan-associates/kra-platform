@@ -381,7 +381,7 @@ This ensures the `ClusterSecretStore` is ready before Grafana's `ExternalSecret`
 
 ## DNS
 
-The `monitoring.kevinryan.io` A record is managed by Terraform in the root module:
+The `monitoring.kevinryan.io` A record is managed by OpenTofu in the root module:
 
 ```hcl
 resource "cloudflare_record" "monitoring" {

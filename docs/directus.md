@@ -36,7 +36,7 @@ All credentials flow from Azure Key Vault via External Secrets Operator — noth
 | File storage | `STORAGE_LOCATIONS` (azure), `STORAGE_AZURE_ACCOUNT_NAME`/`_KEY`, `STORAGE_AZURE_CONTAINER_NAME` (`directus-uploads`) |
 | Public URL | `PUBLIC_URL` (`https://dam.kevinryan.io`) |
 
-The backing Azure resources (the `directus_db` database, the Blob Storage account and container, the Key Vault secrets, the Cloudflare DNS record) are provisioned by Terraform — the manifests only consume them.
+The backing Azure resources (the `directus_db` database, the Blob Storage account and container, the Key Vault secrets, the Cloudflare DNS record) are provisioned by OpenTofu — the manifests only consume them.
 
 ## Relation to Other Services
 

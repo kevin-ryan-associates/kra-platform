@@ -21,7 +21,7 @@ Multi-site platform monorepo for Kevin Ryan (AI-Native Engineering Consultant). 
 - [TypeScript](https://www.typescriptlang.org) — Type safety (strict mode)
 - [Tailwind CSS 4](https://tailwindcss.com) — Styling (@theme token layer)
 - [pnpm](https://pnpm.io) — Workspace package manager
-- [Terraform](https://www.terraform.io) — Infrastructure as code (Azure + Cloudflare)
+- [OpenTofu](https://opentofu.org) — Infrastructure as code (Azure + Cloudflare)
 - [K3s](https://k3s.io) — Lightweight Kubernetes
 - [Flux CD](https://fluxcd.io) — GitOps deployment
 - [Traefik](https://traefik.io) — Ingress controller (bundled with K3s)
@@ -63,7 +63,7 @@ Azure Public IP (North Europe)
 For infrastructure work:
 
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-- [Terraform](https://developer.hashicorp.com/terraform/install) (>= 1.5)
+- [OpenTofu](https://opentofu.org/docs/intro/install/) (>= 1.5)
 - [Flux CLI](https://fluxcd.io/flux/installation/)
 - Cloudflare API token with DNS edit permissions
 - GitHub PAT for Flux bootstrap
@@ -105,10 +105,10 @@ pnpm --filter kevinryan-io lint
 
 ```text
 kevin-ryan-platform/
-├── .github/workflows/         # CI/CD — one deploy workflow per site + Terraform
+├── .github/workflows/         # CI/CD — one deploy workflow per site + OpenTofu
 ├── .tessl/                    # Tessl agent context (managed by Tessl CLI)
 ├── docs/                      # Documentation content (symlinked into docs site)
-├── infra/                     # Terraform — Azure, Cloudflare, GitHub OIDC
+├── infra/                     # OpenTofu — Azure, Cloudflare, GitHub OIDC
 │   ├── bootstrap/             # State storage (applied once)
 │   ├── modules/               # network, compute, registry, keyvault, postgresql, cloudflare, github-oidc
 │   ├── cloud-init-server.yaml # K3s server bootstrap
@@ -142,7 +142,7 @@ All sites deploy via GitOps. A push to `main` that changes files under a site's 
 3. **Flux CD** detects the manifest change and reconciles the cluster (within 10 minutes)
 4. **Kubernetes** performs a rolling update
 
-Infrastructure changes (pushes to `infra/`) trigger a separate Terraform workflow with plan → manual approval → apply.
+Infrastructure changes (pushes to `infra/`) trigger a separate OpenTofu workflow with plan → manual approval → apply.
 
 ### Docker Builds
 
@@ -162,7 +162,7 @@ curl http://localhost:8080/healthz
 
 ## Infrastructure
 
-All infrastructure is defined in Terraform and deployed to Azure:
+All infrastructure is defined in OpenTofu and deployed to Azure:
 
 | Component | Details |
 |-----------|---------|
@@ -178,19 +178,19 @@ All infrastructure is defined in Terraform and deployed to Azure:
 ```bash
 # 1. State storage (one-time)
 cd infra/bootstrap
-terraform init
-terraform apply -var="storage_account_name=krtfstateXXXX"
+tofu init
+tofu apply -var="storage_account_name=krtfstateXXXX"
 
 # 2. Main infrastructure
 cd infra
-terraform init -backend-config="storage_account_name=<from step 1>"
-terraform plan
-terraform apply
+tofu init -backend-config="storage_account_name=<from step 1>"
+tofu plan
+tofu apply
 ```
 
 ### GitHub Environment
 
-Create a `production` environment in GitHub repo settings (Settings → Environments) with required reviewers. This gates `terraform apply` in CI.
+Create a `production` environment in GitHub repo settings (Settings → Environments) with required reviewers. This gates `tofu apply` in CI.
 
 ## Cluster Access
 
@@ -238,7 +238,7 @@ The kubeconfig at `~/.kube/kr-k3s.yaml` is the K3s admin credential (copied from
 
 ### When your public IP changes
 
-Uploads to `ssh` mean your IP rotated. The admin allowlist IP is the `local.admin_ip` CIDR in [`infra/admin-allowlist.tf`](infra/admin-allowlist.tf) — update it, commit, and push to `main`. The **Terraform Plan and Apply** workflow (`.github/workflows/terraform.yml`) plans the change automatically and applies it in the `production` environment after a one-click reviewer approval. The plan should show a single change: NSG `AllowSSH` `source_address_prefix`.
+Uploads to `ssh` mean your IP rotated. The admin allowlist IP is the `local.admin_ip` CIDR in [`infra/admin-allowlist.tf`](infra/admin-allowlist.tf) — update it, commit, and push to `main`. The **OpenTofu Plan and Apply** workflow (`.github/workflows/opentofu.yml`) plans the change automatically and applies it in the `production` environment after a one-click reviewer approval. The plan should show a single change: NSG `AllowSSH` `source_address_prefix`.
 
 ```bash
 # 1. Edit infra/admin-allowlist.tf → local.admin_ip = "<your new IP>/32"
@@ -248,7 +248,7 @@ git commit -m "Update admin SSH allowlist IP to new dedicated IP"
 git push origin main
 ```
 
-Emergency (non-IaC) shortcut — touches only the NSG rule, no VM impact. Reconcile Terraform afterwards by making the same edit in `infra/admin-allowlist.tf` so state stays in sync:
+Emergency (non-IaC) shortcut — touches only the NSG rule, no VM impact. Reconcile OpenTofu afterwards by making the same edit in `infra/admin-allowlist.tf` so state stays in sync:
 
 ```bash
 az network nsg rule update \
@@ -283,7 +283,7 @@ Husky + lint-staged enforce code quality automatically at commit time:
 - **Markdown** (`*.md`): markdownlint
 - **YAML** (`*.yaml`, `*.yml`): yamllint
 - **Dockerfiles** (`Dockerfile*`): hadolint
-- **Terraform** (`*.tf`, `*.tfvars`): `terraform fmt` + tflint
+- **OpenTofu** (`*.tf`, `*.tfvars`): `tofu fmt` + tflint
 
 The pre-push hook runs `pnpm build` to catch build failures before they reach CI.
 

@@ -7,18 +7,18 @@ This runbook documents day-to-day operator access to the two-node K3s cluster ru
 
 ## Why this setup
 
-The Terraform in `infra/` already provisions the SSH plumbing — there is no bastion, VPN, or Tailscale:
+The OpenTofu in `infra/` already provisions the SSH plumbing — there is no bastion, VPN, or Tailscale:
 
 - `infra/modules/compute/main.tf` injects an `admin_ssh_key` onto each VM (`admin_username` defaults to `azureuser`).
 - `infra/modules/network/main.tf` has an `AllowSSH` NSG rule on port 22, source-scoped to `var.admin_ip` (a single CIDR you supply).
-- Both nodes have **static public IPs** (Terraform outputs `node1_public_ip`, `node2_public_ip`).
+- Both nodes have **static public IPs** (OpenTofu outputs `node1_public_ip`, `node2_public_ip`).
 - Port **6443 is not opened** in the NSG. The K3s API is reached from your laptop through an SSH tunnel to `127.0.0.1:6443` on node1, where the K3s serving certificate has a SAN for `127.0.0.1` — so TLS verifies without `--insecure-skip-tls-verify`.
 
 This keeps the attack surface at one port (22) scoped to a single IP, with no new exposed ports and no extra infra.
 
 ## Prerequisites
 
-- `terraform` authenticated to your Azure subscription (same context used for the original `apply`).
+- `tofu` authenticated to your Azure subscription (same context used for the original `apply`).
 - `ssh`, `scp`, `ssh-keygen`.
 - `kubectl` and `k9s` on your laptop (`brew install kubectl k9s`, or `brew install kubernetes-cli k9s`).
 - A password manager to store the SSH key passphrase and the downloaded kubeconfig (it is a cluster-admin credential).
@@ -29,11 +29,11 @@ This keeps the attack surface at one port (22) scoped to a single IP, with no ne
 ssh-keygen -t ed25519 -C "kevinryan-io-admin" -f ~/.ssh/kr_admin_ed25519
 ```
 
-Use a passphrase and record it. You will publish the **public** key (`~/.ssh/kr_admin_ed25519.pub`) through Terraform in the next step.
+Use a passphrase and record it. You will publish the **public** key (`~/.ssh/kr_admin_ed25519.pub`) through OpenTofu in the next step.
 
-## 2. Update Terraform inputs (SSH key + admin IP allowlist)
+## 2. Update OpenTofu inputs (SSH key + admin IP allowlist)
 
-Both the SSH public key and the IP allowlist are Terraform inputs, so updates go through `terraform apply` — no manual Azure clicks.
+Both the SSH public key and the IP allowlist are OpenTofu inputs, so updates go through `tofu apply` — no manual Azure clicks.
 
 ### 2.1 Find your current public IP
 
@@ -43,7 +43,7 @@ curl -s https://ifconfig.me
 
 Append `/32` for the CIDR, e.g. `203.0.113.5/32`.
 
-### 2.2 Update the Terraform inputs
+### 2.2 Update the OpenTofu inputs
 
 The two inputs live in different files.
 
@@ -53,7 +53,7 @@ The two inputs live in different files.
 admin_ssh_public_key = "ssh-ed25519 AAAA... kevinryan-io-admin"
 ```
 
-`admin_ip` — in the committed `infra/admin-allowlist.tf` (`local.admin_ip`). Update the CIDR and push to `main`; the Terraform Plan and Apply workflow deploys it automatically (no local `terraform apply` needed):
+`admin_ip` — in the committed `infra/admin-allowlist.tf` (`local.admin_ip`). Update the CIDR and push to `main`; the OpenTofu Plan and Apply workflow deploys it automatically (no local `tofu apply` needed):
 
 ```hcl
 locals {
@@ -67,7 +67,7 @@ locals {
 ### 2.3 Preview the plan
 
 ```bash
-terraform -chdir=infra plan
+tofu -chdir=infra plan
 ```
 
 Confirm:
@@ -80,7 +80,7 @@ If any resource shows it must be **replaced**, stop and re-evaluate before apply
 ### 2.4 Apply
 
 ```bash
-terraform -chdir=infra apply
+tofu -chdir=infra apply
 ```
 
 This does not reboot the VMs or touch K3s. It only updates the SSH key on both VMs and the NSG source address.
@@ -88,11 +88,11 @@ This does not reboot the VMs or touch K3s. It only updates the SSH key on both V
 ## 3. Verify SSH to both nodes
 
 ```bash
-terraform -chdir=infra output -raw node1_public_ip
-terraform -chdir=infra output -raw node2_public_ip
+tofu -chdir=infra output -raw node1_public_ip
+tofu -chdir=infra output -raw node2_public_ip
 ```
 
-If `terraform output` is unavailable (backend auth), use the Azure CLI:
+If `tofu output` is unavailable (backend auth), use the Azure CLI:
 
 ```bash
 az vm show -d -g rg-kevinryan-io -n vm-kevinryan-node1 --query publicIps -o tsv
@@ -199,7 +199,7 @@ kr-tunnel-down          # API tunnel down
 
 ## When your public IP changes
 
-If `ssh` starts timing out, your public IP has likely rotated. Repeat step 2 (find the IP, update `local.admin_ip` in `infra/admin-allowlist.tf`, push to `main` for the Terraform workflow to apply) — this touches only the NSG rule, not the VMs. The SSH key and kubeconfig do not need to change.
+If `ssh` starts timing out, your public IP has likely rotated. Repeat step 2 (find the IP, update `local.admin_ip` in `infra/admin-allowlist.tf`, push to `main` for the OpenTofu workflow to apply) — this touches only the NSG rule, not the VMs. The SSH key and kubeconfig do not need to change.
 
 ## Rotating the SSH key
 
@@ -207,12 +207,12 @@ To replace the admin key (e.g. a compromised or lost laptop):
 
 1. Generate a new keypair (step 1) under a different path, or overwrite `~/.ssh/kr_admin_ed25519`.
 2. Put the new public key in `admin_ssh_public_key` in `terraform.tfvars`.
-3. `terraform -chdir=infra apply` — updates the key on both VMs in place.
+3. `tofu -chdir=infra apply` — updates the key on both VMs in place.
 4. Re-fetch the kubeconfig only if you also rotate cluster credentials (not required for an SSH key rotation).
 
 ## Acceptance checklist
 
-- [ ] `terraform -chdir=infra plan` shows `~ update in-place` for both VMs' `admin_ssh_key` and the `AllowSSH` NSG rule — never a forced replacement.
+- [ ] `tofu -chdir=infra plan` shows `~ update in-place` for both VMs' `admin_ssh_key` and the `AllowSSH` NSG rule — never a forced replacement.
 - [ ] `ssh kr-node1` and `ssh kr-node2` succeed with the new key and print the right hostname.
 - [ ] With the tunnel up, `KUBECONFIG=~/.kube/kr-k3s.yaml kubectl get nodes` returns both nodes `Ready`.
 - [ ] `k9s` opens on the laptop and shows the live K3s cluster (flux-system and site namespaces present).

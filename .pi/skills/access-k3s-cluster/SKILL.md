@@ -24,7 +24,7 @@ and flux hang on connect** — a primary cause of agent freezes that force
 
 ## Procedure
 
-1. Load secrets once per shell session (see the `plan-terraform-safely` skill for
+1. Load secrets once per shell session (see the `plan-opentofu-safely` skill for
    the full `.env.agents` flow — `KUBECONFIG` is set there):
 
    ```bash

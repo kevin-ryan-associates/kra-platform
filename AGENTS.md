@@ -2,7 +2,7 @@
 
 ## Project Summary
 
-This is a monorepo hosting multiple sites for Kevin Ryan (AI-Native Engineering Consultant), plus shared platform infrastructure (Terraform, K3s manifests, Flux CD GitOps). All sites deploy to a K3s cluster on Azure behind Cloudflare.
+This is a monorepo hosting multiple sites for Kevin Ryan (AI-Native Engineering Consultant), plus shared platform infrastructure (OpenTofu, K3s manifests, Flux CD GitOps). All sites deploy to a K3s cluster on Azure behind Cloudflare.
 
 ### Sites
 
@@ -71,7 +71,7 @@ The following CLI tools are installed in the local environment and should be use
 
 ### Search & file inspection
 
-- **`rg`** — fast recursive grep across TS/React, k8s, terraform, and workflows.
+- **`rg`** — fast recursive grep across TS/React, k8s, OpenTofu (`.tf`), and workflows.
 - **`fd`** — fast file find for locating components, specs, and manifests.
 - **`jq`** — parse `package.json`, `tsconfig*.json`, k8s JSON, and GitHub Actions outputs.
 - **`yq`** — read/transform the YAML in `k8s/**`, `.github/workflows/**`, and `docker-compose.yml` before editing by hand.
@@ -85,8 +85,8 @@ The following CLI tools are installed in the local environment and should be use
 
 ### Infrastructure (infra/)
 
-- **`terraform`** — run `terraform fmt`, `terraform validate`, and (with appropriate creds) `terraform plan` for `infra/` changes.
-- **`tflint`** — lint Terraform alongside `terraform validate`.
+- **`tofu`** — OpenTofu CLI (MPL-2.0, Linux Foundation; migrated from Terraform in ADR-025) — run `tofu fmt`, `tofu validate`, and (with appropriate creds) `tofu plan` for `infra/` changes.
+- **`tflint`** — lint OpenTofu alongside `tofu validate`.
 
 ### Containers
 
@@ -111,10 +111,10 @@ The following CLI tools are installed in the local environment and should be use
 
 The repo is **public**, so secrets must never be committed. `.env.agents` (gitignored — confirmed via `git check-ignore .env.agents`) is the **single source of truth for every secret** in the project. `.gitignore` blocks every real-values env filename (`.env*` and `*.env`) and only allows the committed `.env.agents.example` template (placeholders) plus the ADR-012 `.env.tpl` (1Password `op://` references, not values).
 
-The split between the two Terraform inputs is rule-based, driven by Terraform's own `sensitive = true` flag in `infra/variables.tf`:
+The split between the two OpenTofu inputs is rule-based, driven by the `sensitive = true` flag in `infra/variables.tf`:
 
 - **`infra/terraform.tfvars`** (gitignored) holds **non-secret config only**: `location`, `vm_size`, `admin_username`, `acr_name`, `keyvault_name`, `github_repo_owner`, `github_repo_name`, `admin_ssh_public_key` (a public key), and the four `cloudflare_zone_id*` (public identifiers). The committed template is `infra/terraform.tfvars.example`.
-- **`.env.agents`** holds **every secret**. Terraform consumes the secret variables via the `TF_VAR_<name>` convention (Terraform reads `TF_VAR_<name>` from the environment natively — no `tfvars` entry needed for them). CLI tools consume their own conventional env vars (`ARM_*`, `AZURE_*`, `CLOUDFLARE_API_TOKEN`, `KUBECONFIG`, …).
+- **`.env.agents`** holds **every secret**. OpenTofu consumes the secret variables via the `TF_VAR_<name>` convention (OpenTofu reads `TF_VAR_<name>` from the environment natively — no `tfvars` entry needed for them). CLI tools consume their own conventional env vars (`ARM_*`, `AZURE_*`, `CLOUDFLARE_API_TOKEN`, `KUBECONFIG`, …).
 
 This eliminates the prior duplication where secrets were declared in both `terraform.tfvars` and `.env.agents`. Each secret now lives exactly once.
 
@@ -126,7 +126,7 @@ cp .env.agents.example .env.agents
 # (edit .env.agents with real values; the file is gitignored)
 ```
 
-Then load it before running any tool or Terraform:
+Then load it before running any tool or OpenTofu:
 
 ```bash
 # Load credentials into the current shell (set -a exports every var)
@@ -140,15 +140,15 @@ az login --service-principal \
   --password  "$ARM_CLIENT_SECRET" \
   --tenant    "$ARM_TENANT_ID"
 
-# Terraform reads TF_VAR_* secrets directly from the environment
+# OpenTofu reads TF_VAR_* secrets directly from the environment
 # (terraform.tfvars supplies the non-secret config)
 cd infra
-terraform plan
+tofu plan
 ```
 
 Entries in `.env.agents`:
 
-- **Azure service principal** (assumes the machine is not already authenticated via `az login`): `ARM_CLIENT_ID`, `ARM_CLIENT_SECRET`, `ARM_TENANT_ID`, `ARM_SUBSCRIPTION_ID` (and matching `AZURE_*` aliases). Used by `terraform`, `tflint`, `az`, and `docker`→`az acr login`.
+- **Azure service principal** (assumes the machine is not already authenticated via `az login`): `ARM_CLIENT_ID`, `ARM_CLIENT_SECRET`, `ARM_TENANT_ID`, `ARM_SUBSCRIPTION_ID` (and matching `AZURE_*` aliases). Used by `tofu`, `tflint`, `az`, and `docker`→`az acr login`.
 - **Azure Container Registry**: `ACR_NAME`, `ACR_LOGIN_SERVER` — for `docker build`/`push` to ACR.
 - **Kubernetes**: `KUBECONFIG` points at `~/.kube/kr-k3s.yaml` (k3s cluster on Azure, `rg-kevinryan-io`). The kubeconfig's server is `127.0.0.1:6443`, so start an SSH tunnel once per session before using `kubectl`/`flux`/`k9s`/`kubectx`:
 
@@ -157,8 +157,8 @@ Entries in `.env.agents`:
   ```
 
   (`kr-node1` is the k3s server VM, defined in `~/.ssh/config`.)
-- **Tool credentials (non-`TF_VAR`)**: `CLOUDFLARE_API_TOKEN` (terraform Cloudflare provider + `wrangler`), `CLOUDFLARE_ACCOUNT_ID` (for `wrangler whoami` / account-scoped API), `FLUX_GITHUB_TOKEN`.
-- **Terraform secrets** (`TF_VAR_<name>` for every `sensitive = true` variable in `infra/variables.tf`):
+- **Tool credentials (non-`TF_VAR`)**: `CLOUDFLARE_API_TOKEN` (OpenTofu Cloudflare provider + `wrangler`), `CLOUDFLARE_ACCOUNT_ID` (for `wrangler whoami` / account-scoped API), `FLUX_GITHUB_TOKEN`.
+- **OpenTofu secrets** (`TF_VAR_<name>` for every `sensitive = true` variable in `infra/variables.tf`):
   - `TF_VAR_cloudflare_api_token`, `TF_VAR_github_token`
   - Auth0 (HQ app): `TF_VAR_auth0_secret`, `TF_VAR_auth0_client_id`, `TF_VAR_auth0_client_secret`, `TF_VAR_auth0_domain`, `TF_VAR_auth0_issuer_base_url`
   - HQ integrations: `TF_VAR_anthropic_api_key`
@@ -170,7 +170,7 @@ Entries in `.env.agents`:
 ```text
 kevin-ryan-platform/
 ├── .github/workflows/      # CI/CD (shared)
-├── infra/                  # Terraform (shared across all sites)
+├── infra/                  # OpenTofu (shared across all sites)
 ├── scripts/                # Helper scripts (sync-hq-theme.sh — regenerates the hq theme ConfigMap)
 ├── k8s/                    # Kubernetes manifests
 │   ├── flux-system/        # Flux CD entry point (peer to site dirs)
@@ -257,10 +257,10 @@ To onboard a new site into Flux CD:
 
 ## CI/CD Notes
 
-- The `actions/checkout` action is pinned at v5.1.0 (SHA `fbc6f399…`) in the deploy/terraform/validate workflows — do **not** bump it to v6+ (a credential-persistence change would risk the deploy workflow's auto-commit-to-main).
+- The `actions/checkout` action is pinned at v5.1.0 (SHA `fbc6f399…`) in the deploy/opentofu/validate workflows — do **not** bump it to v6+ (a credential-persistence change would risk the deploy workflow's auto-commit-to-main).
 - `deploy.yml` auto-commits image-tag updates to `main` after deploys — a push right after may be non-fast-forward; rebase and push again.
-- `terraform.yml` passes no `TF_VAR_*` and cannot read the gitignored `terraform.tfvars` — CI **applies use the infra variable defaults**, so defaults are live values; stale defaults are apply hazards.
-- The terraform apply job is gated on the `production` environment; unapproved runs queue indefinitely — `gh run cancel` stale ones, and decode the tfplan artifact before approving (see the `plan-terraform-safely` skill for the version-locked `terraform show` flow).
+- `opentofu.yml` passes the `TF_VAR_*` secrets but cannot read the gitignored `terraform.tfvars` — for non-secret variables CI **applies use the infra variable defaults**, so defaults are live values; stale defaults are apply hazards.
+- The tofu apply job is gated on the `production` environment; unapproved runs queue indefinitely — `gh run cancel` stale ones, and decode the tfplan artifact before approving (see the `plan-opentofu-safely` skill; CI pins `tofu_version: 1.13.1` to match local, so the local `tofu show` decodes CI artifacts directly).
 - PR merges use merge commits.
 - After a successful deploy, a stale page at the edge is **Cloudflare cache** (`cf-cache-status: HIT`), not a Flux failure — purge the zone (`purge_everything` via the Cloudflare API, `CLOUDFLARE_API_TOKEN` from `.env.agents`). There are 4 Cloudflare zones (brand/docs/hq are subdomains of the kevinryan.io zone, not separate zones); zone IDs live only in `infra/terraform.tfvars`. KRA-17 tracks automating the post-deploy purge.
 
@@ -294,7 +294,7 @@ Project-scope agent skills live in `.pi/skills/` and are version-controlled alon
 The `.pi/skills/` path is a Pi convention, but the `SKILL.md` files are plain Markdown and agent-agnostic — any agent or contributor can read them directly.
 
 - `access-k3s-cluster` — open the kr-node1 SSH tunnel and run `kubectl`/`flux` without hanging (non-interactive flags, explicit request timeouts).
-- `plan-terraform-safely` — run `terraform fmt`/`validate`/`plan` against `infra/` with `-input=false` and the `.env.agents` → `TF_VAR_*` source-order flow.
+- `plan-opentofu-safely` — run `tofu fmt`/`validate`/`plan` against `infra/` with `-input=false` and the `.env.agents` → `TF_VAR_*` source-order flow.
 - `onboard-flux-site` — the executable form of the "Adding a new site" steps above, with `kubectl --dry-run`/`yamllint`/`flux build` validation.
 - `patch-librechat-theme` — change hq.kevinryan.io theming/branding or upgrade the digest-pinned LibreChat image, with the mandatory throwaway-pod guard test before any image bump.
 - `manage-plane-workitems` — the executable form of "Project Management (Plane)" above: find/file/update work items in the kra-platform-development project via the `plane` MCP server, including the mandatory ticket lifecycle (In Progress + plan comment on start, deviation/learnings comments as they occur, In Review on commit, Done only on human instruction) and the story-point-estimate-on-create rule.

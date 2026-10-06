@@ -54,7 +54,7 @@ These rules are standing instructions from the repository owner and apply to **a
 3. Read full scope before working: `mcp({ tool: "plane_workitem", args: { action: "retrieve_by_identifier", workitem_identifier: "KRA-NN" } })` — no `project_id` needed; the description is the source of truth for scope and acceptance criteria.
 4. Create a new work item: `mcp({ tool: "plane_workitem", args: { action: "create", project_id: PROJECT_ID, name: "...", description_stripped: "...", priority: "medium", estimate_point: POINT_UUID } })`. Mandatory fields and sizing:
    - ALWAYS include a story point estimate on create — `estimate_point` is a point UUID from Constants, never the numeric value.
-   - Size on the Fibonacci scale against similar past items: small decision/docs fix = 1; ADR or single-file change = 2; CI/Terraform/multi-file change = 3; live-infra verification or multiple systems = 5+.
+   - Size on the Fibonacci scale against similar past items: small decision/docs fix = 1; ADR or single-file change = 2; CI/OpenTofu/multi-file change = 3; live-infra verification or multiple systems = 5+.
    - Never create with `estimate_point` empty — if the size is genuinely uncertain, pick the smallest defensible value and flag it in the item's first comment.
    - `priority` is one of `urgent | high | medium | low | none`; `description_stripped` is plain text (wrapped into HTML on save; `description_html` wins if both are given).
 5. Reference the item identifier (e.g. `KRA-42`) in branch names and commit messages.

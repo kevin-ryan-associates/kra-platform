@@ -17,7 +17,7 @@ const ROWS: readonly Row[] = [
   { layer: 'Inference', choice: 'Scaleway Generative APIs', licence: 'Service', why: 'Hosted in Paris. Dedicated deployments where single-region processing is required.' },
   { layer: 'Cloud', choice: 'Scaleway', licence: 'Service', why: 'French provider. Compute, PostgreSQL, storage and edge under one EU contract.' },
   { layer: 'Edge', choice: 'Scaleway Edge, DNS', licence: 'Service', why: 'Removes the last US operator from the request path.' },
-  { layer: 'Source, CI', choice: 'GitLab via GitLabHost', licence: 'MIT (CE)', why: 'Forge, pipelines and registry, run by a Dutch operator on EU infrastructure.' },
+  { layer: 'Source, CI', choice: 'GitLab, self-hosted', licence: 'MIT (CE)', why: 'Forge, pipelines and registry, run on our own infrastructure inside the estate.' },
   { layer: 'Infrastructure', choice: 'OpenTofu', licence: 'MPL-2.0', why: 'Linux Foundation fork of Terraform. Same language, open governance.' },
   { layer: 'Orchestration', choice: 'k3s', licence: 'Apache 2.0', why: 'Lightweight CNCF Kubernetes that runs the same on any provider.' },
   { layer: 'Delivery', choice: 'Flux CD', licence: 'Apache 2.0', why: 'Every production change is a reviewed commit the cluster pulls.' },

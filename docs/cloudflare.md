@@ -151,82 +151,93 @@ graph LR
 
 ### Cache Rules
 
-Each domain zone has an OpenTofu-managed cache ruleset with two rules: a **whole-host bypass** for dynamic app hosts and a **respect-origin** cache rule for the static-site hosts:
+Each domain zone has an OpenTofu-managed cache ruleset that decides caching **by path class**, not by origin headers:
 
 ```hcl
 resource "cloudflare_ruleset" "cache" {
   zone_id     = var.zone_id
   name        = "Cache rules for ${var.domain}"
-  description = "Cache static site content per origin Cache-Control; serve stale on origin failure; bypass cache for dynamic app hosts"
+  description = "Cache immutable assets and serve stale on origin failure; bypass cache for HTML and dynamic app hosts"
   kind        = "zone"
   phase       = "http_request_cache_settings"
 
-  rules {
-    action = "set_cache_settings"
-    action_parameters {
-      cache = false
-    }
-    expression  = local.bypass_expression
-    description = "Bypass cache for dynamic app hosts"
-    enabled     = true
-  }
+  # dynamic app hosts (e.g. hq) — omitted entirely for zones without them
+  # ... whole-host cache bypass ...
 
   rules {
     action = "set_cache_settings"
     action_parameters {
       cache = true
       edge_ttl {
-        mode = "respect_origin"
+        mode    = "override_origin"
+        default = 86400
       }
       serve_stale {
         disable_stale_while_updating = false
       }
     }
     expression  = local.cache_expression
-    description = "Cache static site content per origin Cache-Control"
+    description = "Cache immutable assets"
+    enabled     = true
+  }
+
+  rules {
+    action = "set_cache_settings"
+    action_parameters {
+      cache = false
+    }
+    expression  = local.bypass_static_expression
+    description = "Bypass cache for HTML and unhashed paths"
     enabled     = true
   }
 }
 ```
 
-| Setting | Value | Effect |
-|---------|-------|--------|
-| `cache` (static sites) | `true` | Edge caching enabled for static-site hosts |
-| `edge_ttl` | `respect_origin` | The edge honors whatever `Cache-Control` the origin (nginx) sends — no TTL override |
-| `serve_stale` | Enabled | Cached assets are still served if the origin is unreachable |
-| `disable_stale_while_updating` | `false` | Continue serving stale assets while fetching a fresh copy in the background |
-| `cache` (dynamic app hosts) | `false` | Whole-host cache bypass — nothing on those hosts is edge-cached |
+Three mutually exclusive rule classes:
 
-The edge TTL **must not** override the origin. The ruleset originally used `edge_ttl mode = "override_origin", default = 86400`, which discarded nginx's `Cache-Control: no-cache` on HTML and cached pages at the edge for up to 24 hours — so every deploy stayed invisible at the edge until the cache aged out or the zone was purged (the KRA-17 root cause, observed on docs.kevinryan.io as `cf-cache-status: HIT` with hours-old content). With `respect_origin`, what nginx sends is what the edge does:
+| Rule | Matches | Setting | Effect |
+|------|---------|---------|--------|
+| **Dynamic app hosts** | whole host (e.g. `hq.kevinryan.io`), every path | `cache = false` | Nothing on the host is edge-cached — LibreChat HTML/API/auth and overlay deploys are immediately visible |
+| **Immutable assets** | static-site hosts AND asset paths (`/_next/static/`, `/_astro/`, or ends with `.svg` `.png` `.ico` `.pdf` `.woff2` `.woff` `.jpg` `.jpeg` `.webp`) | `cache = true`, edge TTL 24h, serve stale | Content-addressed assets cached at the edge and served stale while the origin is down |
+| **HTML + unhashed paths** | static-site hosts AND NOT asset paths | `cache = false` | HTML and unhashed assets (`brand.css`) never edge-cached — deploys are immediately visible |
 
-- **HTML (`Cache-Control: no-cache`)** — never cached at the edge; a deploy is visible the moment the new pod serves it
-- **Hashed/immutable assets (`public, max-age=31536000, immutable`)** — cached at the edge per the origin's 1-year TTL
-- **Assets with no header (e.g. unhashed `brand.css`)** — Cloudflare's default edge TTL (~2 hours); see the follow-up work item on nginx asset headers
+The static-site rules' expressions are mutually exclusive by construction (`not <asset paths>`), so rule order is irrelevant; the dynamic-host rule is host-disjoint from them.
 
-### Cache Expression
+### Why path class, not origin headers
 
-The static-sites cache rule matches the zone's static hostnames, constructed from the domain and its subdomains **excluding** any `cache_bypass_subdomains` entries:
+The ruleset originally used `edge_ttl mode = "override_origin", default = 86400` on **every** path, which edge-cached HTML for up to 24 hours despite deploys — the KRA-17 root cause (observed on docs.kevinryan.io as `cf-cache-status: HIT` with hours-old content).
+
+A naive "fix" of `respect_origin` does not work either: nginx never sends `Cache-Control` on browsed HTML paths — `try_files $uri $uri.html $uri/index.html` serves the file **inside** `location /`, which sets no header (only literal `.html` URIs hit the `~* \.html$` location and get `no-cache`). Verified on the live docs pod: `/` and `/cloudflare/` return no `Cache-Control` at all. With `respect_origin` and no origin directive, Cloudflare caches HTML at its default ~2h edge TTL.
+
+So the edge classifies requests by path instead:
+
+- **HTML and unhashed assets** → never edge-cached; a deploy is visible the moment the new pod serves it
+- **Hashed/immutable assets** → cached 24h at the edge, still served stale while the origin is unreachable
+
+(Browsers still heuristically cache HTML that has no `Cache-Control` — fixing nginx's headers is the separate follow-up item on unhashed/HTML asset headers.)
+
+### Cache Expressions
+
+Example for the kevinryan.io zone (static hosts exclude `hq`, the bypass subdomain):
 
 ```text
-(http.host eq "kevinryan.io") or (http.host eq "www.kevinryan.io") or (http.host eq "brand.kevinryan.io") or (http.host eq "docs.kevinryan.io")
+# immutable assets rule — (static hosts) and (asset paths)
+(http.host eq "kevinryan.io" or http.host eq "www.kevinryan.io" or http.host eq "brand.kevinryan.io" or http.host eq "docs.kevinryan.io") and (starts_with(http.request.uri.path, "/_next/static/") or starts_with(http.request.uri.path, "/_astro/") or ends_with(http.request.uri.path, ".svg") or … )
+
+# HTML + unhashed paths rule — (static hosts) and not (asset paths)
+(http.host eq "kevinryan.io" or … ) and not (starts_with(http.request.uri.path, "/_next/static/") or … )
 ```
 
-Subdomains listed in `cache_bypass_subdomains` (currently `hq`) instead get the **whole-host bypass rule** — the cache is skipped for every path on those hosts, so a dynamic app like LibreChat never serves an edge-cached page, shell, API, or auth response. The two rules' expressions are mutually exclusive (hosts differ), so evaluation order is irrelevant.
-
-For zones without subdomains (e.g. `aiimmigrants.com`), the cache expression covers just the root and www:
-
-```text
-(http.host eq "aiimmigrants.com") or (http.host eq "www.aiimmigrants.com")
-```
+For zones without subdomains (e.g. `aiimmigrants.com`), the static-host list is just the root and www; zones without `cache_bypass_subdomains` (all but kevinryan.io) have no dynamic-host rule at all.
 
 ### Serve Stale: Resilience Without Redundancy
 
 The `serve_stale` setting is particularly important for this platform. With a single-origin architecture (one K3s cluster, one public IP), there is no automatic failover. If the origin goes down:
 
 - **Without serve stale:** All requests fail immediately
-- **With serve stale:** Cloudflare continues serving the last cached version of every **cached asset** (hashed CSS/JS/fonts/images) while the origin is unreachable
+- **With serve stale:** Cloudflare continues serving the last cached version of every **cached asset** (immutable CSS/JS/fonts/images) while the origin is unreachable
 
-Since the KRA-17 fix, HTML is never edge-cached (origin `no-cache`), so serve stale applies to assets only — a page whose cached assets are on the edge still renders, but HTML requests fail while the origin is down. That tradeoff (fresh deploys over edge-served HTML during outages) was deliberately accepted with KRA-17; a manual zone purge remains an emergency tool for clearing bad edge entries.
+HTML is never edge-cached (deliberately — fresh deploys over edge-served HTML during outages, accepted with KRA-17), so serve stale applies to assets only; a page whose cached assets are on the edge still renders, but HTML requests fail while the origin is down. A manual zone purge (`purge_everything` via the Cloudflare API, `CLOUDFLARE_API_TOKEN` from `.env.agents`) remains an emergency tool for clearing bad cached assets.
 
 ## DDoS Protection
 

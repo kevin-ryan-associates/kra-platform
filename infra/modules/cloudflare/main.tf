@@ -50,18 +50,39 @@ resource "cloudflare_record" "subdomains" {
 
 locals {
   # Static-site hosts: apex, www, and every subdomain that is NOT a
-  # whole-host cache-bypass host. The edge TTL mode is "respect_origin", so
-  # what nginx sends is what the edge honors:
-  #   - HTML (`Cache-Control: no-cache`) is never cached at the edge — a
-  #     deploy is visible the moment the new pod serves it (KRA-17).
-  #   - Hashed/immutable assets (`public, max-age=31536000, immutable`) stay
-  #     cached at the edge and are still served stale while the origin is down.
+  # whole-host cache-bypass host.
+  #
+  # The edge decides caching by PATH CLASS, not by origin headers: nginx
+  # never sends Cache-Control on browsed HTML paths (try_files serves them
+  # inside "location /", which sets no header — only literal ".html" URIs
+  # get no-cache), so "respect_origin" alone would leave HTML cached at
+  # Cloudflare's default ~2h edge TTL (found during live verification).
+  #
+  #   - Immutable-asset paths (hashed prefixes + asset extensions) → cached
+  #     at the edge, still served stale while the origin is down.
+  #   - Everything else (HTML, unhashed css/js like brand.css) → cache
+  #     bypass: a deploy is visible the moment the new pod serves it (KRA-17).
   cache_subdomains = [for s in var.subdomains : s if !contains(var.cache_bypass_subdomains, s)]
-  cache_expressions = concat(
-    ["(http.host eq \"${var.domain}\")", "(http.host eq \"www.${var.domain}\")"],
-    [for s in local.cache_subdomains : "(http.host eq \"${s}.${var.domain}\")"]
+  static_host_expression = join(
+    " or ",
+    concat(
+      ["(http.host eq \"${var.domain}\")", "(http.host eq \"www.${var.domain}\")"],
+      [for s in local.cache_subdomains : "(http.host eq \"${s}.${var.domain}\")"]
+    )
   )
-  cache_expression = join(" or ", local.cache_expressions)
+
+  asset_extensions = ["svg", "png", "ico", "pdf", "woff2", "woff", "jpg", "jpeg", "webp"]
+  asset_path_expressions = concat(
+    [
+      "starts_with(http.request.uri.path, \"/_next/static/\")",
+      "starts_with(http.request.uri.path, \"/_astro/\")",
+    ],
+    [for ext in local.asset_extensions : "ends_with(http.request.uri.path, \".${ext}\")"]
+  )
+  asset_path_expression = "(${join(" or ", local.asset_path_expressions)})"
+
+  cache_expression         = "(${local.static_host_expression}) and ${local.asset_path_expression}"
+  bypass_static_expression = "(${local.static_host_expression}) and not ${local.asset_path_expression}"
 
   # Dynamic-app hosts (e.g. the LibreChat app on hq): bypass the cache
   # entirely, on every path — their HTML and auth/API traffic must never be
@@ -75,40 +96,63 @@ locals {
 resource "cloudflare_ruleset" "cache" {
   zone_id     = var.zone_id
   name        = "Cache rules for ${var.domain}"
-  description = "Cache static site content per origin Cache-Control; serve stale on origin failure; bypass cache for dynamic app hosts"
+  description = "Cache immutable assets and serve stale on origin failure; bypass cache for HTML and dynamic app hosts"
   kind        = "zone"
   phase       = "http_request_cache_settings"
 
   # Bypass the cache entirely for dynamic app hosts (e.g. hq.kevinryan.io —
   # LibreChat). Never edge-cache their HTML, API, or auth traffic, so app
-  # and overlay deploys are immediately visible. The expressions are
-  # mutually exclusive with the static-sites rule below (hosts differ).
-  rules {
-    action = "set_cache_settings"
-    action_parameters {
-      cache = false
+  # and overlay deploys are immediately visible. Host-disjoint from the
+  # static-site rules below. Zones with no bypass subdomains skip this
+  # rule entirely (an empty expression is invalid).
+  dynamic "rules" {
+    for_each = length(local.bypass_expression) > 0 ? [1] : []
+
+    content {
+      action = "set_cache_settings"
+      action_parameters {
+        cache = false
+      }
+      expression  = local.bypass_expression
+      description = "Bypass cache for dynamic app hosts"
+      enabled     = true
     }
-    expression  = local.bypass_expression
-    description = "Bypass cache for dynamic app hosts"
-    enabled     = true
   }
 
-  # Static sites: respect the origin Cache-Control (see locals). The edge
-  # TTL must NOT override the origin — `override_origin` cached HTML for
-  # up to 24h despite nginx's no-cache, which is the KRA-17 root cause.
+  # Static sites — immutable-asset paths (hashed prefixes + asset
+  # extensions; see locals). Only content-addressed paths match, so a 24h
+  # edge TTL is safe and provides serve-stale on origin failure. The
+  # original ruleset applied this TTL to EVERY path, edge-caching HTML for
+  # up to 24h despite deploys — the KRA-17 root cause.
   rules {
     action = "set_cache_settings"
     action_parameters {
       cache = true
       edge_ttl {
-        mode = "respect_origin"
+        mode    = "override_origin"
+        default = 86400
       }
       serve_stale {
         disable_stale_while_updating = false
       }
     }
     expression  = local.cache_expression
-    description = "Cache static site content per origin Cache-Control"
+    description = "Cache immutable assets"
+    enabled     = true
+  }
+
+  # Static sites — everything that is NOT an immutable-asset path: HTML and
+  # unhashed assets (brand.css etc.). Never edge-cached, whatever headers
+  # the origin sends (nginx sends none on browsed HTML paths — see locals).
+  # Mutually exclusive with the asset rule by construction (not <asset>),
+  # so evaluation order is irrelevant.
+  rules {
+    action = "set_cache_settings"
+    action_parameters {
+      cache = false
+    }
+    expression  = local.bypass_static_expression
+    description = "Bypass cache for HTML and unhashed paths"
     enabled     = true
   }
 }

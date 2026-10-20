@@ -101,10 +101,13 @@ After the merge lands on `main`, the job is not done until the change is live:
 1. Watch GitHub Actions CI to completion (`gh run watch` / `gh run list`).
 2. Watch Flux reconciliation on the cluster until the new image is serving
    (`access-k3s-cluster` skill — tunnel first, `--request-timeout=30s`).
-3. Purge the Cloudflare cache for the affected site — a stale page right
-   after a successful deploy is **Cloudflare edge cache** (`cf-cache-status:
-   HIT`), NOT a Flux failure. `purge_everything` via the Cloudflare API with
-   `CLOUDFLARE_API_TOKEN` from `.env.agents` (KRA-17 tracks automating this).
+3. Since KRA-17 the Cloudflare cache ruleset uses `respect_origin` (HTML
+   never edge-cached; `hq` fully bypassed), so deploys are immediately visible
+   and a post-deploy purge is no longer needed. A manual zone purge
+   (`purge_everything` via the Cloudflare API with `CLOUDFLARE_API_TOKEN`
+   from `.env.agents`) remains an **emergency tool only** — e.g. a bad cached
+   asset or an in-place change to an unhashed asset (`brand.css` etc., which
+   get Cloudflare's ~2h default edge TTL).
 4. Report when the site is live.
 
 ### 6. Verify

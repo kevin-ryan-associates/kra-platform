@@ -49,51 +49,66 @@ resource "cloudflare_record" "subdomains" {
 }
 
 locals {
-  subdomain_expressions = [for s in var.subdomains : "(http.host eq \"${s}.${var.domain}\")"]
-  all_expressions = concat(
+  # Static-site hosts: apex, www, and every subdomain that is NOT a
+  # whole-host cache-bypass host. The edge TTL mode is "respect_origin", so
+  # what nginx sends is what the edge honors:
+  #   - HTML (`Cache-Control: no-cache`) is never cached at the edge — a
+  #     deploy is visible the moment the new pod serves it (KRA-17).
+  #   - Hashed/immutable assets (`public, max-age=31536000, immutable`) stay
+  #     cached at the edge and are still served stale while the origin is down.
+  cache_subdomains = [for s in var.subdomains : s if !contains(var.cache_bypass_subdomains, s)]
+  cache_expressions = concat(
     ["(http.host eq \"${var.domain}\")", "(http.host eq \"www.${var.domain}\")"],
-    local.subdomain_expressions
+    [for s in local.cache_subdomains : "(http.host eq \"${s}.${var.domain}\")"]
   )
-  cache_expression = join(" or ", local.all_expressions)
+  cache_expression = join(" or ", local.cache_expressions)
 
-  bypass_host_expressions = concat(
-    ["(http.host eq \"${var.domain}\")"],
+  # Dynamic-app hosts (e.g. the LibreChat app on hq): bypass the cache
+  # entirely, on every path — their HTML and auth/API traffic must never be
+  # edge-cached.
+  bypass_expression = join(
+    " or ",
     [for s in var.cache_bypass_subdomains : "(http.host eq \"${s}.${var.domain}\")"]
   )
-  bypass_expression = "(${join(" or ", local.bypass_host_expressions)}) and (starts_with(http.request.uri.path, \"/auth\") or starts_with(http.request.uri.path, \"/api\") or http.request.uri.path eq \"/\" or starts_with(http.request.uri.path, \"/login\"))"
 }
 
 resource "cloudflare_ruleset" "cache" {
   zone_id     = var.zone_id
   name        = "Cache rules for ${var.domain}"
-  description = "Cache static site and serve stale on origin failure"
+  description = "Cache static site content per origin Cache-Control; serve stale on origin failure; bypass cache for dynamic app hosts"
   kind        = "zone"
   phase       = "http_request_cache_settings"
 
-  rules {
-    action = "set_cache_settings"
-    action_parameters {
-      cache = true
-      edge_ttl {
-        mode    = "override_origin"
-        default = 86400
-      }
-      serve_stale {
-        disable_stale_while_updating = false
-      }
-    }
-    expression  = local.cache_expression
-    description = "Serve stale content on origin failure"
-    enabled     = true
-  }
-
+  # Bypass the cache entirely for dynamic app hosts (e.g. hq.kevinryan.io —
+  # LibreChat). Never edge-cache their HTML, API, or auth traffic, so app
+  # and overlay deploys are immediately visible. The expressions are
+  # mutually exclusive with the static-sites rule below (hosts differ).
   rules {
     action = "set_cache_settings"
     action_parameters {
       cache = false
     }
     expression  = local.bypass_expression
-    description = "Bypass cache for auth, API, and login routes"
+    description = "Bypass cache for dynamic app hosts"
+    enabled     = true
+  }
+
+  # Static sites: respect the origin Cache-Control (see locals). The edge
+  # TTL must NOT override the origin — `override_origin` cached HTML for
+  # up to 24h despite nginx's no-cache, which is the KRA-17 root cause.
+  rules {
+    action = "set_cache_settings"
+    action_parameters {
+      cache = true
+      edge_ttl {
+        mode = "respect_origin"
+      }
+      serve_stale {
+        disable_stale_while_updating = false
+      }
+    }
+    expression  = local.cache_expression
+    description = "Cache static site content per origin Cache-Control"
     enabled     = true
   }
 }

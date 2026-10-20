@@ -20,7 +20,7 @@ variable "subdomains" {
 }
 
 variable "cache_bypass_subdomains" {
-  description = "Subdomains that need auth/API cache bypass (e.g. [\"hq\"])"
+  description = "Subdomains that are dynamic apps and bypass the Cloudflare cache entirely, on every path (e.g. [\"hq\"] for the LibreChat app)"
   type        = list(string)
   default     = []
 }
